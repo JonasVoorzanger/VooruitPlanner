@@ -1,0 +1,37 @@
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+  background: #f5f7fb;
+}
+
+.v-application {
+  background: linear-gradient(180deg, #eef3fb 0%, #f8fafc 320px);
+}
+
+.page-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.markdown-content p + p,
+.markdown-content ul + p,
+.markdown-content p + ul {
+  margin-top: 0.75rem;
+}
+
+.markdown-content ul {
+  padding-left: 1.25rem;
+}
+
+.planner-sticky-actions {
+  position: sticky;
+  top: 84px;
+  z-index: 2;
+}
