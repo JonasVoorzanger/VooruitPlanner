@@ -8,18 +8,8 @@
         </p>
       </div>
 
-      <v-alert v-if="!settingsStore.spreadsheetId" type="warning" variant="tonal" border="start">
-        Stel eerst een publieke Google Spreadsheet in om de planner te laden.
-      </v-alert>
-
       <v-card rounded="xl">
         <v-card-text class="d-flex flex-column ga-6">
-          <SpreadsheetConfig
-            v-model="spreadsheetUrl"
-            button-text="Opslaan en laden"
-            @save="saveSpreadsheetConfig"
-          />
-
           <v-row>
             <v-col cols="12" md="4">
               <v-autocomplete
@@ -92,7 +82,6 @@
           </v-row>
 
           <div class="d-flex flex-wrap align-center ga-3">
-            <v-btn color="secondary" prepend-icon="mdi-refresh" @click="reloadData">Gegevens verversen</v-btn>
             <v-btn variant="text" prepend-icon="mdi-filter-off-outline" @click="resetFilters">Filters resetten</v-btn>
             <PdfExportButton @error="setPdfError" />
             <v-spacer />
@@ -102,26 +91,22 @@
       </v-card>
 
       <v-alert v-if="pdfError" type="error" variant="tonal">{{ pdfError }}</v-alert>
-      <v-alert v-if="spreadsheetStore.error" type="error" variant="tonal">{{ spreadsheetStore.error }}</v-alert>
 
       <div id="planner-content" class="d-flex flex-column ga-6">
-        <v-progress-linear v-if="spreadsheetStore.isLoading" color="primary" indeterminate rounded />
-
-        <template v-else-if="filteredWeeks.length">
+        <template v-if="filteredWeeks.length">
           <WeekCard
             v-for="week in filteredWeeks"
             :key="week.week_number"
             :week="week"
             :events="spreadsheetStore.getEventsByWeek(week, selectedYears)"
-            :tests="spreadsheetStore.getTestsByWeekAndYear(week.week_number, selectedYears, selectedSubjects)"
-            :descriptions="spreadsheetStore.getWeekDescriptionsBySubjectAndWeek(week.week_number, selectedYears, selectedSubjects)"
+            :subject-items="spreadsheetStore.getSubjectItemsByWeekAndYear(week.week_number, selectedYears, selectedSubjects)"
             :subjects-map="subjectsMap"
             :selected-subjects="selectedSubjects"
           />
         </template>
 
         <v-alert v-else type="info" variant="tonal">
-          Geen weken gevonden. Controleer de spreadsheet of pas de filters aan.
+          Geen weken gevonden. Pas de filters aan.
         </v-alert>
       </div>
     </div>
@@ -130,9 +115,7 @@
 
 <script>
 import PdfExportButton from '../components/PdfExportButton.vue'
-import SpreadsheetConfig from '../components/SpreadsheetConfig.vue'
 import WeekCard from '../components/WeekCard.vue'
-import { useSettingsStore } from '../stores/settings'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
 
 function areSameValues(left, right) {
@@ -143,14 +126,11 @@ export default {
   name: 'PlannerView',
   components: {
     PdfExportButton,
-    SpreadsheetConfig,
     WeekCard,
   },
   data() {
     return {
-      settingsStore: useSettingsStore(),
       spreadsheetStore: useSpreadsheetStore(),
-      spreadsheetUrl: '',
       selectedYears: [1, 2, 3, 4, 5, 6],
       selectedWeeks: [],
       selectedSubjects: [],
@@ -233,13 +213,9 @@ export default {
       this.applyRangeSelection()
     },
   },
-  async mounted() {
-    this.spreadsheetUrl = this.settingsStore.spreadsheetUrl
+  mounted() {
     this.applyRouteFilters(this.$route.query)
-
-    if (this.settingsStore.spreadsheetId) {
-      await this.loadData()
-    }
+    this.initializeWeeks()
   },
   methods: {
     parseNumberQuery(value) {
@@ -349,33 +325,14 @@ export default {
       const max = Math.max(start, end)
       this.selectedWeeks = this.allWeekNumbers.filter((week) => week >= min && week <= max)
     },
-    initializeWeeksAfterLoad() {
+    initializeWeeks() {
       if (!this.$route.query.weeks) {
         this.selectedWeeks = [...this.allWeekNumbers]
       } else {
         this.selectedWeeks = this.selectedWeeks.filter((week) => this.allWeekNumbers.includes(week))
       }
 
-      if (!this.selectedYears.length && !this.$route.query.year) {
-        this.selectedYears = [1, 2, 3, 4, 5, 6]
-      }
-
       this.syncRangeFromSelectedWeeks(this.selectedWeeks)
-    },
-    async loadData() {
-      try {
-        await this.spreadsheetStore.fetchAllData(this.spreadsheetUrl || this.settingsStore.spreadsheetUrl)
-        this.initializeWeeksAfterLoad()
-      } catch (error) {
-        // state already contains the error message
-      }
-    },
-    async saveSpreadsheetConfig() {
-      this.settingsStore.saveSettings({ spreadsheetUrl: this.spreadsheetUrl })
-      await this.loadData()
-    },
-    async reloadData() {
-      await this.loadData()
     },
     resetFilters() {
       this.selectedYears = [1, 2, 3, 4, 5, 6]

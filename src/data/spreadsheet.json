@@ -1,0 +1,1382 @@
+{
+  "weeks": [
+    {
+      "week_number": 1,
+      "start_date": "2027-01-04",
+      "end_date": "2027-01-11",
+      "label": ""
+    },
+    {
+      "week_number": 2,
+      "start_date": "2027-01-11",
+      "end_date": "2027-01-18",
+      "label": ""
+    },
+    {
+      "week_number": 3,
+      "start_date": "2027-01-18",
+      "end_date": "2027-01-25",
+      "label": ""
+    },
+    {
+      "week_number": 4,
+      "start_date": "2027-01-25",
+      "end_date": "2027-02-01",
+      "label": ""
+    },
+    {
+      "week_number": 5,
+      "start_date": "2027-02-01",
+      "end_date": "2027-02-08",
+      "label": ""
+    },
+    {
+      "week_number": 6,
+      "start_date": "2027-02-08",
+      "end_date": "2027-02-15",
+      "label": ""
+    },
+    {
+      "week_number": 7,
+      "start_date": "2027-02-15",
+      "end_date": "2027-02-22",
+      "label": ""
+    },
+    {
+      "week_number": 8,
+      "start_date": "2027-02-22",
+      "end_date": "2027-03-01",
+      "label": ""
+    },
+    {
+      "week_number": 9,
+      "start_date": "2027-03-01",
+      "end_date": "2027-03-08",
+      "label": ""
+    },
+    {
+      "week_number": 10,
+      "start_date": "2027-03-08",
+      "end_date": "2027-03-15",
+      "label": ""
+    },
+    {
+      "week_number": 11,
+      "start_date": "2027-03-15",
+      "end_date": "2027-03-22",
+      "label": ""
+    },
+    {
+      "week_number": 12,
+      "start_date": "2027-03-22",
+      "end_date": "2027-03-29",
+      "label": ""
+    },
+    {
+      "week_number": 13,
+      "start_date": "2027-03-29",
+      "end_date": "2027-04-05",
+      "label": ""
+    },
+    {
+      "week_number": 14,
+      "start_date": "2027-04-05",
+      "end_date": "2027-04-12",
+      "label": ""
+    },
+    {
+      "week_number": 15,
+      "start_date": "2027-04-12",
+      "end_date": "2027-04-19",
+      "label": ""
+    },
+    {
+      "week_number": 16,
+      "start_date": "2027-04-19",
+      "end_date": "2027-04-26",
+      "label": ""
+    },
+    {
+      "week_number": 17,
+      "start_date": "2027-04-26",
+      "end_date": "2027-05-03",
+      "label": ""
+    },
+    {
+      "week_number": 18,
+      "start_date": "2027-05-03",
+      "end_date": "2027-05-10",
+      "label": ""
+    },
+    {
+      "week_number": 19,
+      "start_date": "2027-05-10",
+      "end_date": "2027-05-17",
+      "label": ""
+    },
+    {
+      "week_number": 20,
+      "start_date": "2027-05-17",
+      "end_date": "2027-05-24",
+      "label": ""
+    },
+    {
+      "week_number": 21,
+      "start_date": "2027-05-24",
+      "end_date": "2027-05-31",
+      "label": ""
+    },
+    {
+      "week_number": 22,
+      "start_date": "2027-05-31",
+      "end_date": "2027-06-07",
+      "label": ""
+    },
+    {
+      "week_number": 23,
+      "start_date": "2027-06-07",
+      "end_date": "2027-06-14",
+      "label": ""
+    },
+    {
+      "week_number": 24,
+      "start_date": "2027-06-14",
+      "end_date": "2027-06-21",
+      "label": ""
+    },
+    {
+      "week_number": 25,
+      "start_date": "2027-06-21",
+      "end_date": "2027-06-28",
+      "label": ""
+    },
+    {
+      "week_number": 26,
+      "start_date": "2027-06-28",
+      "end_date": "2027-07-05",
+      "label": ""
+    },
+    {
+      "week_number": 27,
+      "start_date": "2027-07-05",
+      "end_date": "2027-07-12",
+      "label": ""
+    },
+    {
+      "week_number": 28,
+      "start_date": "2027-07-12",
+      "end_date": "2027-07-19",
+      "label": ""
+    },
+    {
+      "week_number": 29,
+      "start_date": "2027-07-19",
+      "end_date": "2027-07-26",
+      "label": ""
+    },
+    {
+      "week_number": 30,
+      "start_date": "2027-07-26",
+      "end_date": "2027-08-02",
+      "label": ""
+    },
+    {
+      "week_number": 31,
+      "start_date": "2027-08-02",
+      "end_date": "2027-08-09",
+      "label": ""
+    },
+    {
+      "week_number": 32,
+      "start_date": "2027-08-09",
+      "end_date": "2027-08-16",
+      "label": ""
+    },
+    {
+      "week_number": 33,
+      "start_date": "2027-08-16",
+      "end_date": "2027-08-23",
+      "label": ""
+    },
+    {
+      "week_number": 34,
+      "start_date": "2026-08-17",
+      "end_date": "2026-08-24",
+      "label": "Week 1"
+    },
+    {
+      "week_number": 34,
+      "start_date": "2027-08-23",
+      "end_date": "2027-08-30",
+      "label": ""
+    },
+    {
+      "week_number": 35,
+      "start_date": "2026-08-24",
+      "end_date": "2026-08-31",
+      "label": "Week 2"
+    },
+    {
+      "week_number": 36,
+      "start_date": "2026-08-31",
+      "end_date": "2026-09-07",
+      "label": "Week 3"
+    },
+    {
+      "week_number": 37,
+      "start_date": "2026-09-07",
+      "end_date": "2026-09-14",
+      "label": "Week 4"
+    },
+    {
+      "week_number": 38,
+      "start_date": "2026-09-14",
+      "end_date": "2026-09-21",
+      "label": "Week 5"
+    },
+    {
+      "week_number": 39,
+      "start_date": "2026-09-21",
+      "end_date": "2026-09-28",
+      "label": "Week 6"
+    },
+    {
+      "week_number": 40,
+      "start_date": "2026-09-28",
+      "end_date": "2026-10-05",
+      "label": "Week 7"
+    },
+    {
+      "week_number": 41,
+      "start_date": "2026-10-05",
+      "end_date": "2026-10-12",
+      "label": "Activiteitenweek"
+    },
+    {
+      "week_number": 42,
+      "start_date": "2026-10-12",
+      "end_date": "2026-10-19",
+      "label": "Herstvakantie"
+    },
+    {
+      "week_number": 43,
+      "start_date": "2026-10-19",
+      "end_date": "2026-10-26",
+      "label": "Week 8"
+    },
+    {
+      "week_number": 44,
+      "start_date": "2026-10-26",
+      "end_date": "2026-11-02",
+      "label": "Week 9"
+    },
+    {
+      "week_number": 45,
+      "start_date": "2026-11-02",
+      "end_date": "2026-11-09",
+      "label": "Week 10"
+    },
+    {
+      "week_number": 46,
+      "start_date": "2026-11-09",
+      "end_date": "2026-11-16",
+      "label": "Week 11"
+    },
+    {
+      "week_number": 47,
+      "start_date": "2026-11-16",
+      "end_date": "2026-11-23",
+      "label": "Toetsweek / SE-week"
+    },
+    {
+      "week_number": 48,
+      "start_date": "2026-11-23",
+      "end_date": "2026-11-30",
+      "label": ""
+    },
+    {
+      "week_number": 49,
+      "start_date": "2026-11-30",
+      "end_date": "2026-12-07",
+      "label": ""
+    },
+    {
+      "week_number": 50,
+      "start_date": "2026-12-07",
+      "end_date": "2026-12-14",
+      "label": ""
+    },
+    {
+      "week_number": 51,
+      "start_date": "2026-12-14",
+      "end_date": "2026-12-21",
+      "label": ""
+    },
+    {
+      "week_number": 52,
+      "start_date": "2026-12-21",
+      "end_date": "2026-12-28",
+      "label": ""
+    },
+    {
+      "week_number": 53,
+      "start_date": "2026-12-28",
+      "end_date": "2027-01-04",
+      "label": ""
+    }
+  ],
+  "events": [
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-08-17",
+      "end_date": "",
+      "label": "Eerste schooldag",
+      "description": "Welkom terug! Roosters worden uitgedeeld en klassen maken kennis met hun mentor.",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": true,
+      "year_3": true,
+      "year_4": true,
+      "year_5": true,
+      "year_6": true
+    },
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-08-27",
+      "end_date": "",
+      "label": "Schoolfoto",
+      "description": "Klas- en portretfoto's worden gemaakt tijdens de schooldag.",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": true,
+      "year_3": true,
+      "year_4": true,
+      "year_5": true,
+      "year_6": true
+    },
+    {
+      "type": "plan",
+      "week_number": 35,
+      "date": "",
+      "end_date": "",
+      "label": "Introductie leesvaardigheid",
+      "description": "Leesstrategieën: skimmen, scannen en globaal lezen.",
+      "subject_abbreviation": "NL",
+      "year": 2,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 35,
+      "date": "",
+      "end_date": "",
+      "label": "Herhaling algebra",
+      "description": "Terugblik op vergelijkingen, ongelijkheden en stelsels uit leerjaar 2.",
+      "subject_abbreviation": "WI",
+      "year": 3,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 35,
+      "date": "",
+      "end_date": "",
+      "label": "SO grammar review",
+      "description": "Formative check: grammar van het vorige leerjaar (passive, conditionals).",
+      "subject_abbreviation": "EN",
+      "year": 5,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-09-02",
+      "end_date": "",
+      "label": "Informatieavond leerjaar 1",
+      "description": "Ouderavond voor ouders van brugklassers. Aanvang 19:00 in de aula.",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 36,
+      "date": "",
+      "end_date": "",
+      "label": "Vocabulary unit 1",
+      "description": "Introductie van thema Food & Drink: 30 nieuwe woorden en uitdrukkingen.",
+      "subject_abbreviation": "EN",
+      "year": 1,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 36,
+      "date": "",
+      "end_date": "",
+      "label": "Start Eerste Wereldoorlog",
+      "description": "Oorzaken en het stelsel van allianties vóór 1914: Triple Entente en Triple Alliance.",
+      "subject_abbreviation": "GS",
+      "year": 4,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 36,
+      "date": "",
+      "end_date": "",
+      "label": "Impératif en vocabulaire",
+      "description": "Vorming van de gebiedende wijs en woordenschat thema: l'école.",
+      "subject_abbreviation": "FR",
+      "year": 2,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-09-11",
+      "end_date": "",
+      "label": "Studiedag",
+      "description": "Geen lessen. Docenten volgen nascholing en voeren leerlingbesprekingen.",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": true,
+      "year_3": true,
+      "year_4": true,
+      "year_5": true,
+      "year_6": true
+    },
+    {
+      "type": "so",
+      "week_number": 37,
+      "date": "",
+      "end_date": "",
+      "label": "SO leesvaardigheid H1",
+      "description": "Schriftelijke overhoring: skimmen, scannen en 10 begripsvragen.",
+      "subject_abbreviation": "NL",
+      "year": 2,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 37,
+      "date": "",
+      "end_date": "",
+      "label": "SO algebra",
+      "description": "Vergelijkingen, ongelijkheden en stelsels van vergelijkingen.",
+      "subject_abbreviation": "WI",
+      "year": 3,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 38,
+      "date": "",
+      "end_date": "",
+      "label": "SO vocabulary unit 1",
+      "description": "Woordenschattoets: definities, vertalingen en zinnen aanvullen.",
+      "subject_abbreviation": "EN",
+      "year": 1,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 38,
+      "date": "",
+      "end_date": "",
+      "label": "Genetica en celdeling",
+      "description": "Start thema: DNA-structuur, nucleotiden en mitose.",
+      "subject_abbreviation": "BI",
+      "year": 4,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 38,
+      "date": "",
+      "end_date": "",
+      "label": "Argumentatief schrijven",
+      "description": "Opbouw van een betoog: stelling, argumenten en weerlegging.",
+      "subject_abbreviation": "NL",
+      "year": 3,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 39,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk statistiek",
+      "description": "Gemiddelde, mediaan, modus en spreidingsmaten.",
+      "subject_abbreviation": "WI",
+      "year": 2,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 39,
+      "date": "",
+      "end_date": "",
+      "label": "SO Eerste Wereldoorlog",
+      "description": "Schietincident Sarajevo, mobilisatie en het Schlieffenplan.",
+      "subject_abbreviation": "GS",
+      "year": 4,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 39,
+      "date": "",
+      "end_date": "",
+      "label": "Reading comprehension",
+      "description": "Strategieën voor Engelstalige teksten: inference, main idea en detail.",
+      "subject_abbreviation": "EN",
+      "year": 3,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 39,
+      "date": "",
+      "end_date": "",
+      "label": "SO impératif",
+      "description": "Vorming en gebruik van de gebiedende wijs in positieve en negatieve zinnen.",
+      "subject_abbreviation": "FR",
+      "year": 2,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 40,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk leesvaardigheid",
+      "description": "Toets over H1 en H2: meerkeuzevragen en open vragen over zakelijke teksten.",
+      "subject_abbreviation": "NL",
+      "year": 2,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 40,
+      "date": "",
+      "end_date": "",
+      "label": "SO zuren en basen",
+      "description": "pH-berekeningen, Ka-waarden en neutralisatiereacties.",
+      "subject_abbreviation": "SK",
+      "year": 5,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 40,
+      "date": "",
+      "end_date": "",
+      "label": "SO genetica – celdeling",
+      "description": "Vragen over DNA-replicatie, mitose en celcyclus.",
+      "subject_abbreviation": "BI",
+      "year": 4,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "schoolexamen",
+      "week_number": 40,
+      "date": "",
+      "end_date": "",
+      "label": "Schoolexamen spreekvaardigheid",
+      "description": "Mondelinge presentatie van 5 minuten over een zelfgekozen onderwerp, beoordeeld op inhoud en uitspraak.",
+      "subject_abbreviation": "EN",
+      "year": 6,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-10-07",
+      "end_date": "",
+      "label": "Ouderavond",
+      "description": "Rapportbespreking. Aanmelden via Magister, gesprekken van 10 minuten per mentor.",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": true,
+      "year_3": true,
+      "year_4": true,
+      "year_5": true,
+      "year_6": true
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 41,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk functies",
+      "description": "Lineaire, kwadratische en exponentiële functies: formules en grafieken.",
+      "subject_abbreviation": "WI",
+      "year": 3,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 41,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk unit 1-2",
+      "description": "Vocabulary, grammar en een korte leesopdracht uit unit 1 en 2.",
+      "subject_abbreviation": "EN",
+      "year": 1,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 41,
+      "date": "",
+      "end_date": "",
+      "label": "Elektromagnetisme",
+      "description": "Coulombwet, elektrisch veld en elektrische potentiaal.",
+      "subject_abbreviation": "NA",
+      "year": 5,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-10-12",
+      "end_date": "2026-10-18",
+      "label": "Herfstvakantie",
+      "description": "",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": true,
+      "year_3": true,
+      "year_4": true,
+      "year_5": true,
+      "year_6": true
+    },
+    {
+      "type": "so",
+      "week_number": 43,
+      "date": "",
+      "end_date": "",
+      "label": "SO argumentatief schrijven",
+      "description": "Beoordeling op structuur, taalgebruik en argumentkwaliteit.",
+      "subject_abbreviation": "NL",
+      "year": 3,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 43,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk Eerste Wereldoorlog",
+      "description": "H1 t/m H3: oorzaken, verloop en gevolgen van de Eerste Wereldoorlog.",
+      "subject_abbreviation": "GS",
+      "year": 4,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 43,
+      "date": "",
+      "end_date": "",
+      "label": "Meetkunde",
+      "description": "Pythagoras, gelijkvormigheid en de sinusregel.",
+      "subject_abbreviation": "WI",
+      "year": 2,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 43,
+      "date": "",
+      "end_date": "",
+      "label": "Grammar – present perfect",
+      "description": "Vorming en gebruik van de present perfect versus de simple past.",
+      "subject_abbreviation": "EN",
+      "year": 2,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 43,
+      "date": "",
+      "end_date": "",
+      "label": "SO elektromagnetisme deel 1",
+      "description": "Coulombwet en elektrisch veld: berekeningen en conceptvragen.",
+      "subject_abbreviation": "NA",
+      "year": 5,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "presentatie",
+      "week_number": 43,
+      "date": "",
+      "end_date": "",
+      "label": "Presentatie Frans",
+      "description": "Mondelinge presentatie van 3 minuten over het thema: les vacances.",
+      "subject_abbreviation": "FR",
+      "year": 3,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 44,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk zuren basen en zouten",
+      "description": "Zuur-basenevenwichten, pH, titraties en buffersystemen.",
+      "subject_abbreviation": "SK",
+      "year": 5,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 44,
+      "date": "",
+      "end_date": "",
+      "label": "Spelling werkwoorden",
+      "description": "Herhaling sterke en zwakke werkwoorden: tegenwoordige en verleden tijd.",
+      "subject_abbreviation": "NL",
+      "year": 1,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "luistertoets",
+      "week_number": 44,
+      "date": "",
+      "end_date": "",
+      "label": "Luistertoets unit 3-4",
+      "description": "Luisteroefeningen uit het leerboek met multiple choice en korte antwoorden.",
+      "subject_abbreviation": "EN",
+      "year": 4,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "schoolexamen",
+      "week_number": 44,
+      "date": "",
+      "end_date": "",
+      "label": "Schoolexamen analyse",
+      "description": "Differentiëren en integreren: regels, toepassingen en vraagstukken.",
+      "subject_abbreviation": "WI",
+      "year": 6,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-10-30",
+      "end_date": "",
+      "label": "Studiedag",
+      "description": "Teamvergadering en leerlingbespreking. Geen lessen voor leerlingen.",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": true,
+      "year_3": true,
+      "year_4": true,
+      "year_5": true,
+      "year_6": true
+    },
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-11-05",
+      "end_date": "",
+      "label": "Rapportbespreking",
+      "description": "Leerlingen bespreken tussenrapport met mentor. Individuele gesprekjes van 10 minuten.",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": true,
+      "year_3": true,
+      "year_4": true,
+      "year_5": true,
+      "year_6": true
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 45,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk meetkunde",
+      "description": "Pythagoras, gelijkvormigheid en sinus/cosinus in rechthoekige driehoeken.",
+      "subject_abbreviation": "WI",
+      "year": 2,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 45,
+      "date": "",
+      "end_date": "",
+      "label": "SO present perfect",
+      "description": "Vertaalopdrachten, invuloefeningen en foutcorrectie.",
+      "subject_abbreviation": "EN",
+      "year": 2,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 45,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk genetica",
+      "description": "DNA-structuur, mitose, meiose en erfelijkheid: kruisingsschema's.",
+      "subject_abbreviation": "BI",
+      "year": 4,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 45,
+      "date": "",
+      "end_date": "",
+      "label": "Koude Oorlog",
+      "description": "Start thema: IJzeren Gordijn, Trumandoctrine en Marshallplan.",
+      "subject_abbreviation": "GS",
+      "year": 5,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 46,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk schrijfvaardigheid",
+      "description": "Betoog schrijven en samenvatten onder tijdsdruk (90 minuten).",
+      "subject_abbreviation": "NL",
+      "year": 3,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 46,
+      "date": "",
+      "end_date": "",
+      "label": "SO reading comprehension",
+      "description": "Twee teksten met meerkeuzevragen, open vragen en woordbetekenissen.",
+      "subject_abbreviation": "EN",
+      "year": 3,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 46,
+      "date": "",
+      "end_date": "",
+      "label": "SO goniometrie",
+      "description": "Sinus, cosinus en tangens in rechthoekige en niet-rechthoekige driehoeken.",
+      "subject_abbreviation": "WI",
+      "year": 4,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 46,
+      "date": "",
+      "end_date": "",
+      "label": "Organische chemie – introductie",
+      "description": "Alkanen en alkenen: naamgeving, structuurformules en eigenschappen.",
+      "subject_abbreviation": "SK",
+      "year": 5,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 46,
+      "date": "",
+      "end_date": "",
+      "label": "Ecologie",
+      "description": "Introductie: biotoop, populatie, ecosysteem en voedselketens.",
+      "subject_abbreviation": "BI",
+      "year": 5,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-11-20",
+      "end_date": "",
+      "label": "Rapportuitreiking",
+      "description": "Leerlingen ontvangen hun rapport. Korte gesprekjes met mentor mogelijk.",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": true,
+      "year_2": true,
+      "year_3": true,
+      "year_4": true,
+      "year_5": true,
+      "year_6": true
+    },
+    {
+      "type": "plan",
+      "week_number": 47,
+      "date": "",
+      "end_date": "",
+      "label": "Goniometrie – eenheidscirkel",
+      "description": "Cirkelgrootheden, radialen en de eenheidscirkel: sin en cos voor alle hoeken.",
+      "subject_abbreviation": "WI",
+      "year": 3,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "proefwerk",
+      "week_number": 47,
+      "date": "",
+      "end_date": "",
+      "label": "Proefwerk elektromagnetisme en golven",
+      "description": "Elektrische kringen, golfbewegingen en lichtbreking.",
+      "subject_abbreviation": "NA",
+      "year": 5,
+      "weight": "2",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "so",
+      "week_number": 47,
+      "date": "",
+      "end_date": "",
+      "label": "SO Koude Oorlog H1",
+      "description": "Oorzaken en het begin van de Koude Oorlog: 1945–1953.",
+      "subject_abbreviation": "GS",
+      "year": 5,
+      "weight": "1",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 47,
+      "date": "",
+      "end_date": "",
+      "label": "Vocabulary unit 3",
+      "description": "Thema School Life: 25 nieuwe woorden, uitdrukkingen en collocaties.",
+      "subject_abbreviation": "EN",
+      "year": 1,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    }
+  ],
+  "subjects": [
+    {
+      "abbreviation": "AK",
+      "full_name": "Aardrijkskunde"
+    },
+    {
+      "abbreviation": "BECO",
+      "full_name": "Bedrijfseconomie"
+    },
+    {
+      "abbreviation": "BI",
+      "full_name": "Biologie"
+    },
+    {
+      "abbreviation": "CKV",
+      "full_name": "Culturele Kunstzinnige Vorming"
+    },
+    {
+      "abbreviation": "CPB",
+      "full_name": "Coaching Project Bovenbouw"
+    },
+    {
+      "abbreviation": "DF",
+      "full_name": "DELF"
+    },
+    {
+      "abbreviation": "DU",
+      "full_name": "Duits"
+    },
+    {
+      "abbreviation": "EC",
+      "full_name": "Economie"
+    },
+    {
+      "abbreviation": "EN",
+      "full_name": "Engels"
+    },
+    {
+      "abbreviation": "FI",
+      "full_name": "Filosofie"
+    },
+    {
+      "abbreviation": "FLE",
+      "full_name": "Fast Lane English"
+    },
+    {
+      "abbreviation": "FR",
+      "full_name": "Frans"
+    },
+    {
+      "abbreviation": "GR",
+      "full_name": "Grieks"
+    },
+    {
+      "abbreviation": "GS",
+      "full_name": "Geschiedenis"
+    },
+    {
+      "abbreviation": "HA",
+      "full_name": "Handvaardigheid"
+    },
+    {
+      "abbreviation": "IN",
+      "full_name": "Informatica"
+    },
+    {
+      "abbreviation": "IT",
+      "full_name": "Italiaans"
+    },
+    {
+      "abbreviation": "KG",
+      "full_name": "Kunstgeschiedenis"
+    },
+    {
+      "abbreviation": "LA",
+      "full_name": "Latijn"
+    },
+    {
+      "abbreviation": "LO",
+      "full_name": "Lichamelijke opvoeding"
+    },
+    {
+      "abbreviation": "MAW",
+      "full_name": "Maatschappijwetenschappen"
+    },
+    {
+      "abbreviation": "ML",
+      "full_name": "Maatschappijleer"
+    },
+    {
+      "abbreviation": "NA",
+      "full_name": "Natuurkunde"
+    },
+    {
+      "abbreviation": "NL",
+      "full_name": "Nederlands"
+    },
+    {
+      "abbreviation": "NLT",
+      "full_name": "Natuur, Leven & Technologie"
+    },
+    {
+      "abbreviation": "SK",
+      "full_name": "Scheikunde"
+    },
+    {
+      "abbreviation": "SP",
+      "full_name": "Spaans"
+    },
+    {
+      "abbreviation": "TE",
+      "full_name": "Tekenen"
+    },
+    {
+      "abbreviation": "WA",
+      "full_name": "Wiskunde A"
+    },
+    {
+      "abbreviation": "WB",
+      "full_name": "Wiskunde B"
+    },
+    {
+      "abbreviation": "WC",
+      "full_name": "Wiskunde C"
+    },
+    {
+      "abbreviation": "WD",
+      "full_name": "Wiskunde D"
+    },
+    {
+      "abbreviation": "WI",
+      "full_name": "Wiskunde"
+    }
+  ]
+}

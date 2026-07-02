@@ -22,7 +22,11 @@
           <h3 class="text-subtitle-1 font-weight-bold">Schoolbrede events</h3>
         </div>
         <div v-if="events.length" class="d-flex flex-column ga-3">
-          <EventItem v-for="event in events" :key="`${event.date}-${event.description}`" :event="event" />
+          <EventItem
+            v-for="event in events"
+            :key="`${event.date}-${event.end_date}-${event.label}-${event.description}`"
+            :event="event"
+          />
         </div>
         <v-alert v-else density="comfortable" type="info" variant="tonal">
           Geen schoolbrede events voor deze selectie.
@@ -52,20 +56,19 @@
             <div v-if="section.tests.length" class="mb-4">
               <div class="text-subtitle-2 font-weight-bold mb-2">Toetsen & beoordelingen</div>
               <TestItem
-                v-for="testItem in section.tests"
-                :key="`${section.abbreviation}-${testItem.year}-${testItem.label}-${testItem.type}`"
-                :test-item="testItem"
+                v-for="item in section.tests"
+                :key="`${section.abbreviation}-${item.year}-${item.label}-${item.type}`"
+                :test-item="item"
                 :subject-name="section.fullName"
               />
             </div>
 
-            <div v-if="section.descriptions.length">
-              <div class="text-subtitle-2 font-weight-bold mb-2">Weekbeschrijvingen</div>
-              <WeekDescription
-                v-for="description in section.descriptions"
-                :key="`${section.abbreviation}-${description.year}-${description.week_number}`"
-                :description="description"
-                :subject-name="section.fullName"
+            <div v-if="section.planItems.length">
+              <div class="text-subtitle-2 font-weight-bold mb-2">Activiteiten</div>
+              <EventItem
+                v-for="item in section.planItems"
+                :key="`${section.abbreviation}-${item.year}-${item.label}`"
+                :event="item"
               />
             </div>
           </v-sheet>
@@ -83,7 +86,12 @@
 import EventItem from './EventItem.vue'
 import SubjectChip from './SubjectChip.vue'
 import TestItem from './TestItem.vue'
-import WeekDescription from './WeekDescription.vue'
+
+const TEST_TYPES = new Set(['proefwerk', 'so', 'schoolexamen', 'presentatie', 'luistertoets'])
+
+function isTestType(type) {
+  return TEST_TYPES.has(String(type || '').trim().toLowerCase())
+}
 
 export default {
   name: 'WeekCard',
@@ -91,7 +99,6 @@ export default {
     EventItem,
     SubjectChip,
     TestItem,
-    WeekDescription,
   },
   props: {
     week: {
@@ -102,11 +109,7 @@ export default {
       type: Array,
       default: () => [],
     },
-    tests: {
-      type: Array,
-      default: () => [],
-    },
-    descriptions: {
+    subjectItems: {
       type: Array,
       default: () => [],
     },
@@ -132,22 +135,22 @@ export default {
       return `${formatter.format(startDate)} – ${formatter.format(endDate)}`
     },
     subjectSections() {
-      const sourceSubjects = new Set([
-        ...this.tests.map((item) => item.subject_abbreviation),
-        ...this.descriptions.map((item) => item.subject_abbreviation),
-      ])
+      const sourceSubjects = new Set(this.subjectItems.map((item) => item.subject_abbreviation))
       const orderedSubjects = this.selectedSubjects.length
         ? this.selectedSubjects.filter((subject) => sourceSubjects.has(subject))
         : Array.from(sourceSubjects).sort((a, b) => a.localeCompare(b))
 
       return orderedSubjects
-        .map((abbreviation) => ({
-          abbreviation,
-          fullName: this.subjectsMap[abbreviation] || '',
-          tests: this.tests.filter((item) => item.subject_abbreviation === abbreviation),
-          descriptions: this.descriptions.filter((item) => item.subject_abbreviation === abbreviation),
-        }))
-        .filter((section) => section.tests.length || section.descriptions.length)
+        .map((abbreviation) => {
+          const items = this.subjectItems.filter((item) => item.subject_abbreviation === abbreviation)
+          return {
+            abbreviation,
+            fullName: this.subjectsMap[abbreviation] || '',
+            tests: items.filter((item) => isTestType(item.type)),
+            planItems: items.filter((item) => !isTestType(item.type)),
+          }
+        })
+        .filter((section) => section.tests.length || section.planItems.length)
     },
   },
 }

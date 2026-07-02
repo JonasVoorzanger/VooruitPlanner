@@ -243,6 +243,7 @@ export default {
             'Content-Type': 'application/json',
             'x-api-key': this.claudeApiKey,
             'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
           },
           body: JSON.stringify(requestBody),
         })
