@@ -16,7 +16,7 @@
     <v-divider />
 
     <v-card-text class="d-flex flex-column ga-6">
-      <section>
+      <section v-if="!isCompact || events.length">
         <div class="d-flex align-center ga-2 mb-3">
           <v-icon color="info">mdi-bullhorn-outline</v-icon>
           <h3 class="text-subtitle-1 font-weight-bold">Schoolbrede events</h3>
@@ -60,10 +60,11 @@
                 :key="`${section.abbreviation}-${item.year}-${item.label}-${item.type}`"
                 :test-item="item"
                 :subject-name="section.fullName"
+                :compact="isCompact"
               />
             </div>
 
-            <div v-if="section.planItems.length">
+            <div v-if="!isCompact && section.planItems.length">
               <div class="text-subtitle-2 font-weight-bold mb-2">Activiteiten</div>
               <EventItem
                 v-for="item in section.planItems"
@@ -121,8 +122,15 @@ export default {
       type: Array,
       default: () => [],
     },
+    detailLevel: {
+      type: String,
+      default: 'full',
+    },
   },
   computed: {
+    isCompact() {
+      return this.detailLevel === 'compact'
+    },
     formattedDateRange() {
       const formatter = new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: 'short' })
       const startDate = new Date(`${this.week.start_date}T12:00:00`)
@@ -150,7 +158,7 @@ export default {
             planItems: items.filter((item) => !isTestType(item.type)),
           }
         })
-        .filter((section) => section.tests.length || section.planItems.length)
+        .filter((section) => this.isCompact ? section.tests.length : section.tests.length || section.planItems.length)
     },
   },
 }

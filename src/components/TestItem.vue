@@ -19,7 +19,7 @@
 
       <div>
         <div class="text-subtitle-1 font-weight-bold">{{ testItem.label || 'Toetsmoment' }}</div>
-        <MarkdownContent v-if="testItem.description" :content="testItem.description" class="mt-2 text-medium-emphasis" />
+        <MarkdownContent v-if="!compact && testItem.description" :content="testItem.description" class="mt-2 text-medium-emphasis" />
       </div>
     </v-card-text>
   </v-card>
@@ -51,6 +51,10 @@ export default {
     subjectName: {
       type: String,
       default: '',
+    },
+    compact: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {

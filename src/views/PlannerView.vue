@@ -85,6 +85,14 @@
             <v-btn variant="text" prepend-icon="mdi-filter-off-outline" @click="resetFilters">Filters resetten</v-btn>
             <PdfExportButton @error="setPdfError" />
             <v-spacer />
+            <v-btn-toggle v-model="detailLevel" color="primary" divided mandatory density="compact">
+              <v-btn value="compact" size="small" prepend-icon="mdi-view-compact-outline">Compact</v-btn>
+              <v-btn value="full" size="small" prepend-icon="mdi-view-sequential-outline">Volledig</v-btn>
+            </v-btn-toggle>
+            <v-btn-toggle v-model="viewMode" color="primary" divided mandatory density="compact">
+              <v-btn value="list" size="small" icon="mdi-view-list-outline" />
+              <v-btn value="cards" size="small" icon="mdi-view-dashboard-outline" />
+            </v-btn-toggle>
             <v-chip color="primary" variant="tonal">{{ filteredWeeks.length }} weken zichtbaar</v-chip>
           </div>
         </v-card-text>
@@ -94,15 +102,29 @@
 
       <div id="planner-content" class="d-flex flex-column ga-6">
         <template v-if="filteredWeeks.length">
-          <WeekCard
-            v-for="week in filteredWeeks"
-            :key="week.week_number"
-            :week="week"
-            :events="spreadsheetStore.getEventsByWeek(week, selectedYears)"
-            :subject-items="spreadsheetStore.getSubjectItemsByWeekAndYear(week.week_number, selectedYears, selectedSubjects)"
-            :subjects-map="subjectsMap"
-            :selected-subjects="selectedSubjects"
-          />
+          <template v-if="viewMode === 'cards'">
+            <WeekCard
+              v-for="week in filteredWeeks"
+              :key="week.week_number"
+              :week="week"
+              :events="spreadsheetStore.getEventsByWeek(week, selectedYears)"
+              :subject-items="spreadsheetStore.getSubjectItemsByWeekAndYear(week.week_number, selectedYears, selectedSubjects)"
+              :subjects-map="subjectsMap"
+              :selected-subjects="selectedSubjects"
+              :detail-level="detailLevel"
+            />
+          </template>
+          <template v-else>
+            <WeekListRow
+              v-for="week in filteredWeeks"
+              :key="week.week_number"
+              :week="week"
+              :events="spreadsheetStore.getEventsByWeek(week, selectedYears)"
+              :subject-items="spreadsheetStore.getSubjectItemsByWeekAndYear(week.week_number, selectedYears, selectedSubjects)"
+              :subjects-map="subjectsMap"
+              :detail-level="detailLevel"
+            />
+          </template>
         </template>
 
         <v-alert v-else type="info" variant="tonal">
@@ -116,6 +138,7 @@
 <script>
 import PdfExportButton from '../components/PdfExportButton.vue'
 import WeekCard from '../components/WeekCard.vue'
+import WeekListRow from '../components/WeekListRow.vue'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
 
 function areSameValues(left, right) {
@@ -127,6 +150,7 @@ export default {
   components: {
     PdfExportButton,
     WeekCard,
+    WeekListRow,
   },
   data() {
     return {
@@ -139,6 +163,8 @@ export default {
       rangeEnd: null,
       syncingRoute: false,
       pdfError: '',
+      viewMode: localStorage.getItem('plannerViewMode') || 'cards',
+      detailLevel: localStorage.getItem('plannerDetailLevel') || 'full',
     }
   },
   computed: {
@@ -211,6 +237,12 @@ export default {
     },
     rangeEnd() {
       this.applyRangeSelection()
+    },
+    viewMode(val) {
+      localStorage.setItem('plannerViewMode', val)
+    },
+    detailLevel(val) {
+      localStorage.setItem('plannerDetailLevel', val)
     },
   },
   mounted() {
