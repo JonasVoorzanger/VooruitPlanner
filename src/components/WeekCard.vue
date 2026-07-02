@@ -158,7 +158,7 @@ export default {
             planItems: items.filter((item) => !isTestType(item.type)),
           }
         })
-        .filter((section) => this.isCompact ? section.tests.length : section.tests.length || section.planItems.length)
+        .filter((section) => section.tests.length || (!this.isCompact && section.planItems.length))
     },
   },
 }
