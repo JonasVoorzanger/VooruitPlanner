@@ -172,9 +172,6 @@ export default {
         let groups = []
         if (week) {
           groups = buildWeekGroups(this.events, week.week_number, this.year, this.courses)
-          if (this.cardMode === 'monthCompact') {
-            groups = groups.filter((group) => group.hasTest)
-          }
         }
 
         rows.push({

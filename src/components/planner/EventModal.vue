@@ -2,27 +2,30 @@
   <div class="backdrop" @click.self="close">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-head">
-        <div>
+        <div class="modal-title">{{ headerTitle }}</div>
+        <button class="close" @click="close">✕</button>
+      </div>
+      <div class="modal-body" :class="{ multi: details.length > 1 }">
+        <div v-for="(detail, index) in details" :key="index" class="detail-item">
           <div class="badges">
             <span class="type-badge pp-mono" :class="{ test: detail.isTest }">{{ detail.typeLabel }}</span>
             <span v-if="detail.weightLabel" class="weight pp-mono">{{ detail.weightLabel }}</span>
           </div>
           <div class="title">{{ detail.title }}</div>
           <div v-if="detail.subjectName" class="sub-line">{{ detail.subjectName }}</div>
-        </div>
-        <button class="close" @click="close">✕</button>
-      </div>
-      <div class="modal-body">
-        <MarkdownContent v-if="detail.description" class="description" :content="detail.description" />
-        <div v-else class="no-description">Geen extra toelichting.</div>
-        <div class="meta">
-          <div>
-            <span class="meta-label pp-mono">wanneer</span><br />
-            <span class="meta-value">{{ detail.whenLabel }}</span>
-          </div>
-          <div>
-            <span class="meta-label pp-mono">bron</span><br />
-            <span class="meta-value">automatisch ingelezen</span>
+
+          <MarkdownContent v-if="detail.description" class="description" :content="detail.description" />
+          <div v-else class="no-description">Geen extra toelichting.</div>
+
+          <div class="meta">
+            <div>
+              <span class="meta-label pp-mono">wanneer</span><br />
+              <span class="meta-value">{{ detail.whenLabel }}</span>
+            </div>
+            <div>
+              <span class="meta-label pp-mono">bron</span><br />
+              <span class="meta-value">automatisch ingelezen</span>
+            </div>
           </div>
         </div>
       </div>
@@ -39,12 +42,20 @@ export default {
     MarkdownContent,
   },
   props: {
-    detail: {
-      type: Object,
+    details: {
+      type: Array,
       required: true,
     },
   },
   emits: ['close'],
+  computed: {
+    headerTitle() {
+      if (this.details.length <= 1) {
+        return 'Details'
+      }
+      return `${this.details.length} activiteiten`
+    },
+  },
   mounted() {
     document.addEventListener('keydown', this.onKeydown)
   },
@@ -95,6 +106,12 @@ export default {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .badges {
@@ -156,6 +173,17 @@ export default {
 
 .modal-body {
   padding: 18px 20px;
+}
+
+.modal-body.multi {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detail-item + .detail-item {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
 }
 
 .description {

@@ -1,10 +1,10 @@
 <template>
-  <div class="event-card" :class="{ test: group.hasTest, dense: isDense }">
+  <div class="event-card" :class="{ test: group.hasTest, dense: isDense }" @click="openGroup">
     <div class="card-head">
       <span class="abbr pp-mono" :title="subjectName">{{ group.abbr }}</span>
     </div>
     <div class="items">
-      <div v-for="(item, index) in visibleItems" :key="index" class="item" @click="open(item)">
+      <div v-for="(item, index) in visibleItems" :key="index" class="item">
         <div class="item-line">
           <span v-if="item.meta.test" class="type-badge pp-mono">{{ item.meta.label }}</span>
           <span v-if="modeFlags.title" class="item-title">{{ item.event.label || item.meta.label }}</span>
@@ -12,13 +12,14 @@
             {{ item.weightLabel }}
           </span>
         </div>
-        <div v-if="modeFlags.desc && item.event.description" class="item-desc">{{ item.event.description }}</div>
+        <MarkdownContent v-if="modeFlags.desc && item.event.description" class="item-desc" :content="item.event.description" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import MarkdownContent from '../MarkdownContent.vue'
 import { typeMeta, weightLabel } from '../../utils/plannerModel'
 
 const MODE_FLAGS = {
@@ -30,6 +31,9 @@ const MODE_FLAGS = {
 
 export default {
   name: 'EventCard',
+  components: {
+    MarkdownContent,
+  },
   props: {
     group: {
       type: Object,
@@ -72,8 +76,8 @@ export default {
     },
   },
   methods: {
-    open(item) {
-      this.$emit('open', { event: item.event, whenLabel: this.whenLabel })
+    openGroup() {
+      this.$emit('open', { events: this.group.events, whenLabel: this.whenLabel })
     },
   },
 }
@@ -90,6 +94,7 @@ export default {
   gap: 6px;
   width: 100%;
   transition: border-color 0.12s, box-shadow 0.12s;
+  cursor: pointer;
 }
 
 .event-card:hover {
@@ -131,7 +136,6 @@ export default {
 }
 
 .item {
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -177,5 +181,9 @@ export default {
   color: var(--muted);
   line-height: 1.4;
   text-wrap: pretty;
+}
+
+.item-desc :deep(p) {
+  margin: 0;
 }
 </style>

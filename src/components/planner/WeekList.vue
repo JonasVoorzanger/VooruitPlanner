@@ -1,9 +1,12 @@
 <template>
   <div class="week-list">
-    <button v-if="hasPast" class="old-toggle" @click="showOld = !showOld">
-      <span class="chevron">{{ showOld ? '▾' : '▸' }}</span>
-      {{ showOld ? 'Verberg oude weken' : 'Toon oude weken' }}
-    </button>
+    <div class="top-controls">
+      <button v-if="hasPast" class="old-toggle" @click="showOld = !showOld">
+        <span class="chevron">{{ showOld ? '▾' : '▸' }}</span>
+        {{ showOld ? 'Verberg oude weken' : 'Toon oude weken' }}
+      </button>
+      <button class="old-toggle" @click="collapseAll">Klap alle weken in</button>
+    </div>
 
     <div v-for="week in visibleWeeks" :key="week.week_number" class="week" :class="{ past: week.past }">
       <button class="week-head" :class="{ open: week.isOpen }" @click="toggle(week.index)">
@@ -59,6 +62,7 @@ import {
   addDays,
   buildWeekGroups,
   formatShort,
+  formatYearShort,
   parseDate,
   sameDay,
   schoolWideInWeek,
@@ -157,7 +161,7 @@ export default {
           index,
           week_number: week.week_number,
           label: week.label || `Week ${week.week_number}`,
-          range: `${start.getDate()} – ${formatShort(end)}`,
+          range: `${start.getDate()} – ${formatShort(end)} '${formatYearShort(end)} (wk ${week.week_number})`,
           isCurrent: this.today >= start && this.today <= end,
           isOpen: openSet.has(index),
           past: index < this.todayIndex,
@@ -181,6 +185,9 @@ export default {
       }
       this.openWeeks = [...openSet]
     },
+    collapseAll() {
+      this.openWeeks = []
+    },
     openSchoolWide(event) {
       this.$emit('open', { event, whenLabel: schoolWideWhenLabel(event) })
     },
@@ -197,8 +204,14 @@ export default {
   gap: 14px;
 }
 
+.top-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .old-toggle {
-  align-self: flex-start;
   height: 32px;
   padding: 0 13px;
   border-radius: 8px;

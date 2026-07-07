@@ -78,7 +78,7 @@
       />
     </div>
 
-    <EventModal v-if="activeDetail" :detail="activeDetail" @close="activeDetail = null" />
+    <EventModal v-if="activeDetails.length" :details="activeDetails" @close="activeDetails = []" />
   </div>
 </template>
 
@@ -114,7 +114,7 @@ export default {
       detailLevel: localStorage.getItem('plannerDetailLevel') === 'compact' ? 'compact' : 'full',
       monthYear: today.getFullYear(),
       monthMonth: today.getMonth(),
-      activeDetail: null,
+      activeDetails: [],
       viewOptions: [
         { value: 'list', label: 'Lijst' },
         { value: 'month', label: 'Maand' },
@@ -248,8 +248,9 @@ export default {
         this.monthMonth += 1
       }
     },
-    openEvent({ event, whenLabel }) {
-      this.activeDetail = eventDetail(event, this.subjectsMap, whenLabel)
+    openEvent({ event, events, whenLabel }) {
+      const sourceEvents = Array.isArray(events) && events.length ? events : [event].filter(Boolean)
+      this.activeDetails = sourceEvents.map((item) => eventDetail(item, this.subjectsMap, whenLabel))
     },
   },
 }

@@ -152,8 +152,20 @@
     },
     {
       "week_number": 26,
+      "start_date": "2026-06-22",
+      "end_date": "2026-06-29",
+      "label": ""
+    },
+    {
+      "week_number": 26,
       "start_date": "2027-06-28",
       "end_date": "2027-07-05",
+      "label": ""
+    },
+    {
+      "week_number": 27,
+      "start_date": "2026-06-29",
+      "end_date": "2026-07-06",
       "label": ""
     },
     {
@@ -164,9 +176,21 @@
     },
     {
       "week_number": 28,
+      "start_date": "2026-07-06",
+      "end_date": "2026-07-13",
+      "label": "Zomervakantie"
+    },
+    {
+      "week_number": 28,
       "start_date": "2027-07-12",
       "end_date": "2027-07-19",
       "label": ""
+    },
+    {
+      "week_number": 29,
+      "start_date": "2026-07-13",
+      "end_date": "2026-07-20",
+      "label": "Zomervakantie"
     },
     {
       "week_number": 29,
@@ -176,9 +200,21 @@
     },
     {
       "week_number": 30,
+      "start_date": "2026-07-20",
+      "end_date": "2026-07-27",
+      "label": "Zomervakantie"
+    },
+    {
+      "week_number": 30,
       "start_date": "2027-07-26",
       "end_date": "2027-08-02",
       "label": ""
+    },
+    {
+      "week_number": 31,
+      "start_date": "2026-07-27",
+      "end_date": "2026-08-03",
+      "label": "Zomervakantie"
     },
     {
       "week_number": 31,
@@ -188,9 +224,21 @@
     },
     {
       "week_number": 32,
+      "start_date": "2026-08-03",
+      "end_date": "2026-08-10",
+      "label": "Zomervakantie"
+    },
+    {
+      "week_number": 32,
       "start_date": "2027-08-09",
       "end_date": "2027-08-16",
       "label": ""
+    },
+    {
+      "week_number": 33,
+      "start_date": "2026-08-10",
+      "end_date": "2026-08-17",
+      "label": "Zomervakantie"
     },
     {
       "week_number": 33,
@@ -326,6 +374,40 @@
     }
   ],
   "events": [
+    {
+      "type": "school-wide",
+      "week_number": null,
+      "date": "2026-07-04",
+      "end_date": "2026-08-16",
+      "label": "Zomervakantie",
+      "description": "Iedereen kan lekker genieten van de welverdiende rust",
+      "subject_abbreviation": "",
+      "year": null,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
+    {
+      "type": "plan",
+      "week_number": 28,
+      "date": "",
+      "end_date": "",
+      "label": "Test",
+      "description": "Hier kan dus gewoon uitgebreide info komen te staan van iets dan in de zomervakantie moet gebeuren.\nSterker nog, ik moet hier *markdown* kunnen gebruiken:\n\n1. eerste item\n2. tweede item",
+      "subject_abbreviation": "NA",
+      "year": 4,
+      "weight": "",
+      "year_1": false,
+      "year_2": false,
+      "year_3": false,
+      "year_4": false,
+      "year_5": false,
+      "year_6": false
+    },
     {
       "type": "school-wide",
       "week_number": null,

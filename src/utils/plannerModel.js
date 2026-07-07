@@ -70,15 +70,31 @@ export function weightLabel(weight) {
   if (!value) {
     return ''
   }
-  return value.toLowerCase() === 'formatief' ? 'formatief' : `weegt ${value}`
+  return value.toLowerCase() === 'formatief' ? 'formatief' : `${value}x`
+}
+
+export function formatYearShort(date) {
+  return String(date.getFullYear()).slice(-2)
 }
 
 export function schoolWideEvents(events) {
   return events.filter((event) => normalizeType(event.type) === 'school-wide')
 }
 
+const YEAR_KEYS = ['year_1', 'year_2', 'year_3', 'year_4', 'year_5', 'year_6']
+
 function matchesYear(event, year) {
-  return !year || Boolean(event[`year_${year}`])
+  if (!year) {
+    return true
+  }
+
+  const hasAnyYearFlag = YEAR_KEYS.some((key) => Boolean(event[key]))
+  if (!hasAnyYearFlag) {
+    // Empty year flags means the event applies to all years.
+    return true
+  }
+
+  return Boolean(event[`year_${year}`])
 }
 
 export function schoolWideOnDate(events, date, year) {

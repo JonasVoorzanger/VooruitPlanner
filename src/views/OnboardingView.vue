@@ -27,7 +27,12 @@
 
       <div class="section-head">
         <div class="section-label">Vakken</div>
-        <div class="count pp-mono">{{ courses.length }} gekozen</div>
+        <div class="section-actions">
+          <button class="toggle-all pp-mono" @click="toggleAllCourses">
+            {{ allCoursesSelected ? 'Deselecteer alles' : 'Selecteer alles' }}
+          </button>
+          <div class="count pp-mono">{{ courses.length }} gekozen</div>
+        </div>
       </div>
       <div class="chip-row subjects">
         <button
@@ -69,6 +74,9 @@ export default {
     subjects() {
       return this.spreadsheetStore.subjects
     },
+    allCoursesSelected() {
+      return this.subjects.length > 0 && this.courses.length === this.subjects.length
+    },
     plannerPath() {
       return `/jaar/${this.year}/${this.courses.join('.')}`
     },
@@ -82,6 +90,13 @@ export default {
         this.courses = this.courses.filter((course) => course !== abbreviation)
       } else {
         this.courses = [...this.courses, abbreviation]
+      }
+    },
+    toggleAllCourses() {
+      if (this.allCoursesSelected) {
+        this.courses = []
+      } else {
+        this.courses = this.subjects.map((subject) => subject.abbreviation)
       }
     },
     confirm() {
@@ -166,6 +181,12 @@ export default {
   margin-bottom: 10px;
 }
 
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .section-head .section-label {
   margin-bottom: 0;
 }
@@ -173,6 +194,23 @@ export default {
 .count {
   font-size: 12.5px;
   color: var(--faint);
+}
+
+.toggle-all {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  border-radius: 7px;
+  height: 28px;
+  padding: 0 9px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11.5px;
+}
+
+.toggle-all:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
 }
 
 .chip-row {
@@ -215,11 +253,13 @@ export default {
   padding: 8px 13px;
   border-radius: 9px;
   border: 1px solid var(--border);
+  box-sizing: border-box;
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
   font-family: inherit;
   font-size: 13.5px;
+  font-weight: 500;
   transition: all 0.1s;
 }
 
@@ -231,7 +271,7 @@ export default {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .confirm {

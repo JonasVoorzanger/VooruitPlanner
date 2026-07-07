@@ -97,6 +97,11 @@ npm install
 npm run dev
 ```
 
+## Load data
+```bash
+npm run load-data
+```
+
 ## Build
 
 ```bash
