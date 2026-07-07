@@ -86,8 +86,8 @@ const tabDefinitions = {
   weeks: 'week_number,start_date,end_date,label',
   events: 'date,description,year_1,year_2,year_3,year_4,year_5,year_6',
   subjects: 'abbreviation,full_name',
-  tests: 'week_number,type,weight,subject_abbreviation,year,label,description',
-  week_descriptions: 'subject_abbreviation,year,week_number,description',
+  tests: 'cal_year,cal_week_number,type,weight,subject_abbreviation,year,label,description',
+  week_descriptions: 'subject_abbreviation,year,cal_year,cal_week_number,description',
 }
 
 export default {

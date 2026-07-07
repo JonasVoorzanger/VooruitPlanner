@@ -52,10 +52,21 @@ export const useSpreadsheetStore = defineStore('spreadsheet', {
         return years.some((year) => event[`year_${year}`])
       })
     },
-    getSubjectItemsByWeekAndYear: (state) => (weekNumber, years = [], subjects = []) => {
+    getSubjectItemsByWeekAndYear: (state) => (weekNumber, years = [], subjects = [], calYear = null) => {
       return state.events
         .filter((item) => String(item.type || '').trim().toLowerCase() !== 'school-wide')
-        .filter((item) => Number(item.week_number) === Number(weekNumber))
+        .filter((item) => Number(item.cal_week_number ?? item.week_number) === Number(weekNumber))
+        .filter((item) => {
+          if (!Number.isFinite(Number(calYear))) {
+            return true
+          }
+          const itemCalYear = Number(item.cal_year)
+          // Backward compatibility for old entries without cal_year.
+          if (!Number.isFinite(itemCalYear)) {
+            return true
+          }
+          return itemCalYear === Number(calYear)
+        })
         .filter((item) => !years.length || years.includes(Number(item.year)))
         .filter((item) => !subjects.length || subjects.includes(item.subject_abbreviation))
         .sort(sortBySubjectThenLabel)

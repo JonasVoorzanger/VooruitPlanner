@@ -1,6 +1,13 @@
 <template>
   <div class="screen">
     <div class="container">
+      <header class="mobile-topbar">
+        <button class="menu-btn" aria-label="Open menu" @click="menuOpen = true">
+          <span class="mdi mdi-menu" aria-hidden="true"></span>
+          <span>Menu</span>
+        </button>
+      </header>
+
       <header class="topbar">
         <div class="brand">
           <div class="logo pp-mono">P</div>
@@ -30,6 +37,7 @@
               v-for="option in viewOptions"
               :key="option.value"
               class="segment"
+              :disabled="isNarrowScreen && option.value === 'month'"
               :class="{ active: view === option.value }"
               @click="setView(option.value)"
             >
@@ -39,6 +47,7 @@
               </span>
             </button>
           </div>
+          <div v-if="isNarrowScreen" class="view-hint">Maand-weergave alleen op grote schermen</div>
           <div class="segment-group">
             <button
               v-for="option in detailOptions"
@@ -52,6 +61,70 @@
                 <span>{{ option.label }}</span>
               </span>
             </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="menuOpen" class="mobile-menu-overlay" @click.self="closeMenu">
+        <div class="mobile-menu-panel">
+          <div class="mobile-menu-head">
+            <div class="mobile-menu-title">PeriodePlanner</div>
+            <button class="icon-btn" title="Sluiten" @click="closeMenu">
+              <span class="mdi mdi-close" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div class="mobile-menu-subjects pp-mono">{{ mobileSubjectLine }}</div>
+
+          <div class="mobile-menu-actions">
+            <button class="icon-btn" title="Thema" @click="toggleTheme">{{ themeIcon }}</button>
+            <button class="text-btn" @click="$router.push('/'); closeMenu()">Wijzig</button>
+          </div>
+
+          <div class="mobile-controls">
+            <div v-if="view === 'month'" class="month-nav">
+              <button class="nav-btn today-btn" @click="goToday">Vandaag</button>
+              <div class="arrows">
+                <button class="icon-btn arrow" @click="prevMonth">‹</button>
+                <button class="icon-btn arrow" @click="nextMonth">›</button>
+              </div>
+            </div>
+
+            <div class="range-label">{{ rangeLabel }}</div>
+
+            <div class="segments mobile-segments">
+              <div class="segment-group">
+                <button
+                  v-for="option in viewOptions"
+                  :key="`menu-view-${option.value}`"
+                  class="segment"
+                  :disabled="isNarrowScreen && option.value === 'month'"
+                  :class="{ active: view === option.value }"
+                  @click="setView(option.value, true)"
+                >
+                  <span class="segment-content">
+                    <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                    <span>{{ option.label }}</span>
+                  </span>
+                </button>
+              </div>
+              <div v-if="isNarrowScreen" class="view-hint">Maand-weergave alleen op grote schermen</div>
+
+              <div class="segment-group">
+                <button
+                  v-for="option in detailOptions"
+                  :key="`menu-detail-${option.value}`"
+                  class="segment"
+                  :class="{ active: detailLevel === option.value }"
+                  @click="setDetailLevel(option.value, true)"
+                >
+                  <span class="segment-content">
+                    <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                    <span>{{ option.label }}</span>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -116,6 +189,8 @@ export default {
     return {
       spreadsheetStore: useSpreadsheetStore(),
       today,
+      menuOpen: false,
+      isNarrowScreen: false,
       view: storedView === 'month' ? 'month' : 'list',
       detailLevel: localStorage.getItem('plannerDetailLevel') === 'compact' ? 'compact' : 'full',
       monthYear: today.getFullYear(),
@@ -186,6 +261,9 @@ export default {
       const count = this.courses.length
       return `${count} ${count === 1 ? 'vak' : 'vakken'} · ${this.courses.join(' · ')}`
     },
+    mobileSubjectLine() {
+      return this.courses.length ? this.courses.join(' · ') : 'Geen vakken geselecteerd'
+    },
     rangeLabel() {
       if (this.view === 'month') {
         return `${MONTHS[this.monthMonth]} ${this.monthYear}`
@@ -213,9 +291,19 @@ export default {
       },
       deep: true,
     },
+    '$route.fullPath'() {
+      this.closeMenu()
+    },
   },
   created() {
     this.validateSelection()
+  },
+  mounted() {
+    this.updateScreenMode()
+    window.addEventListener('resize', this.updateScreenMode)
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.updateScreenMode)
   },
   methods: {
     validateSelection() {
@@ -228,11 +316,32 @@ export default {
       }
       saveSelection({ year: this.year, courses: this.courses })
     },
-    setView(view) {
+    setView(view, shouldCloseMenu = false) {
+      if (this.isNarrowScreen && view === 'month') {
+        return
+      }
       this.view = view
       if (view === 'month') {
         this.goToday()
       }
+      if (shouldCloseMenu) {
+        this.closeMenu()
+      }
+    },
+    updateScreenMode() {
+      this.isNarrowScreen = window.innerWidth <= 760
+      if (this.isNarrowScreen && this.view === 'month') {
+        this.view = 'list'
+      }
+    },
+    setDetailLevel(level, shouldCloseMenu = false) {
+      this.detailLevel = level
+      if (shouldCloseMenu) {
+        this.closeMenu()
+      }
+    },
+    closeMenu() {
+      this.menuOpen = false
     },
     goToday() {
       this.monthYear = this.anchorDate.getFullYear()
@@ -271,6 +380,10 @@ export default {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 20px 64px;
+}
+
+.mobile-topbar {
+  display: none;
 }
 
 .topbar {
@@ -435,6 +548,11 @@ export default {
   font-weight: 500;
 }
 
+.segment:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .segment-content {
   display: inline-flex;
   align-items: center;
@@ -451,5 +569,132 @@ export default {
   color: var(--text);
   font-weight: 600;
   box-shadow: var(--shadow);
+}
+
+.segment.active:disabled {
+  background: var(--surface-2);
+  box-shadow: none;
+}
+
+.view-hint {
+  width: 100%;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: -2px;
+}
+
+.mobile-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: color-mix(in oklab, var(--bg) 75%, black 25%);
+  padding: 0;
+}
+
+.mobile-menu-panel {
+  width: 100%;
+  min-height: 100%;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.mobile-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mobile-menu-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.mobile-menu-subjects {
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 2px;
+}
+
+.mobile-menu-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mobile-segments {
+  margin-left: 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.mobile-segments .segment-group {
+  width: 100%;
+  justify-content: stretch;
+}
+
+.mobile-segments .segment {
+  flex: 1;
+  padding: 9px 11px;
+}
+
+@media (max-width: 760px) {
+  .container {
+    padding: 0 14px 52px;
+  }
+
+  .mobile-topbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 0 10px;
+  }
+
+  .menu-btn {
+    height: 38px;
+    padding: 0 13px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .menu-btn .mdi {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .topbar,
+  .controls {
+    display: none;
+  }
+
+  .mobile-menu-actions .text-btn,
+  .mobile-menu-actions .icon-btn {
+    height: 36px;
+  }
+
+  .mobile-controls .range-label {
+    min-width: 0;
+    font-size: 20px;
+  }
 }
 </style>

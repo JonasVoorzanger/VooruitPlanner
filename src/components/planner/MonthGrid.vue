@@ -171,7 +171,7 @@ export default {
         const week = this.weekByMonday[monday.getTime()] || null
         let groups = []
         if (week) {
-          groups = buildWeekGroups(this.events, week.week_number, this.year, this.courses)
+          groups = buildWeekGroups(this.events, week, this.year, this.courses)
         }
 
         rows.push({

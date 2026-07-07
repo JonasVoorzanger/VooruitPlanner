@@ -57,7 +57,7 @@ All items — school-wide events, holidays, subject activities, and tests — li
 | ------------ | ----------- |
 | `school-wide` | Announcements, holidays, studiedagen, etc. |
 
-**Subject types** (appear inside the subject section, matched to weeks via `week_number`):
+**Subject types** (appear inside the subject section, matched to weeks via `cal_year` + `cal_week_number`):
 
 | `type` value | Description |
 | ------------ | ----------- |
@@ -72,12 +72,13 @@ All items — school-wide events, holidays, subject activities, and tests — li
 
 | Column | Description |
 | ------ | ----------- |
+| `cal_year` | Calendar year of the target week (e.g. `2026`) |
+| `cal_week_number` | Calendar week number of the target week (e.g. `35`) |
 | `type` | Item type — see tables above |
 | `label` | Short title (e.g. `Studiedag`, `Herhaling H1-H3`) |
 | `description` | Optional longer description (Markdown supported) |
 | `date` | Start date (`YYYY-MM-DD`) — used for school-wide items |
 | `end_date` | Optional end date for multi-day items like holidays (`YYYY-MM-DD`) |
-| `week_number` | Week number — used for subject items |
 | `subject_abbreviation` | Subject abbreviation for subject items (stored uppercased) |
 | `year` | School year for subject items (e.g. `3`) |
 | `weight` | Grading weight for test items (e.g. `1`, `2`, or `formatief`) |

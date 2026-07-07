@@ -70,7 +70,10 @@ export function weightLabel(weight) {
   if (!value) {
     return ''
   }
-  return value.toLowerCase() === 'formatief' ? 'formatief' : `${value}x`
+  if (value.toLowerCase() === 'formatief' || value.includes('%')) {
+    return value.toLowerCase() === 'formatief' ? 'formatief' : value
+  }
+  return `${value}x`
 }
 
 export function formatYearShort(date) {
@@ -125,11 +128,35 @@ export function schoolWideInWeek(events, week, year) {
   })
 }
 
-export function subjectEventsInWeek(events, weekNumber, year, courses) {
+function weekKeyFromWeek(week) {
+  const start = parseDate(week && week.start_date)
+  return {
+    calYear: start ? start.getFullYear() : null,
+    calWeekNumber: Number(week && week.week_number),
+  }
+}
+
+function eventMatchesWeek(event, week) {
+  const { calYear, calWeekNumber } = weekKeyFromWeek(week)
+  const eventWeekNumber = Number(event.cal_week_number ?? event.week_number)
+  if (!Number.isFinite(eventWeekNumber) || eventWeekNumber !== calWeekNumber) {
+    return false
+  }
+
+  const eventCalYear = Number(event.cal_year)
+  if (Number.isFinite(eventCalYear) && Number.isFinite(calYear)) {
+    return eventCalYear === calYear
+  }
+
+  // Backward compatibility for older datasets without cal_year.
+  return true
+}
+
+export function subjectEventsInWeek(events, week, year, courses) {
   return events.filter(
     (event) =>
       normalizeType(event.type) !== 'school-wide' &&
-      Number(event.week_number) === Number(weekNumber) &&
+      eventMatchesWeek(event, week) &&
       Number(event.year) === Number(year) &&
       courses.includes(event.subject_abbreviation),
   )
@@ -137,13 +164,13 @@ export function subjectEventsInWeek(events, weekNumber, year, courses) {
 
 // Groups a week's subject events per subject, in the order of the chosen
 // courses, with tests sorted before planning items inside each group.
-export function buildWeekGroups(events, weekNumber, year, courses) {
+export function buildWeekGroups(events, week, year, courses) {
   return courses
     .map((abbreviation) => {
       const items = events.filter(
         (event) =>
           normalizeType(event.type) !== 'school-wide' &&
-          Number(event.week_number) === Number(weekNumber) &&
+          eventMatchesWeek(event, week) &&
           Number(event.year) === Number(year) &&
           event.subject_abbreviation === abbreviation,
       )
@@ -171,8 +198,9 @@ export function eventDetail(event, subjectsMap, whenLabel) {
     title: event.label || meta.label,
     weightLabel: meta.test ? weightLabel(event.weight) : '',
     description: event.description || '',
+    subjectAbbreviation: event.subject_abbreviation || '',
     subjectName: (subjectsMap && subjectsMap[event.subject_abbreviation]) || '',
-    whenLabel: whenLabel || (event.week_number ? `Week ${event.week_number}` : ''),
+    whenLabel: whenLabel || (event.cal_week_number || event.week_number ? `Week ${event.cal_week_number || event.week_number}` : ''),
   }
 }
 

@@ -105,7 +105,12 @@ async function main() {
 
   const events = eventsRaw.map((row) => ({
     type: row.type,
-    week_number: row.week_number ? Number(row.week_number) : null,
+    cal_year: row.cal_year ? Number(row.cal_year) : null,
+    cal_week_number: row.cal_week_number
+      ? Number(row.cal_week_number)
+      : row.week_number
+        ? Number(row.week_number)
+        : null,
     date: row.date,
     end_date: row.end_date,
     label: row.label,

@@ -1,18 +1,39 @@
 <template>
-  <div class="event-card" :class="{ test: group.hasTest, dense: isDense }" @click="openGroup">
+  <div class="event-card" :class="{ dense: isDense }" @click="openGroup">
     <div class="card-head">
       <span class="abbr pp-mono" :title="subjectName">{{ group.abbr }}</span>
     </div>
     <div class="items">
-      <div v-for="(item, index) in visibleItems" :key="index" class="item">
-        <div class="item-line">
-          <span v-if="item.meta.test" class="type-badge pp-mono">{{ item.meta.label }}</span>
-          <span v-if="modeFlags.title" class="item-title">{{ item.event.label || item.meta.label }}</span>
-          <span v-if="modeFlags.weight && item.meta.test && item.weightLabel" class="weight pp-mono">
-            {{ item.weightLabel }}
-          </span>
+      <div v-if="planItems.length" class="item-section plan-section">
+        <div v-for="(item, index) in planItems" :key="`plan-${index}`" class="item">
+          <div class="item-line">
+            <span v-if="modeFlags.title" class="item-title">{{ item.event.label || item.meta.label }}</span>
+          </div>
+          <MarkdownContent
+            v-if="modeFlags.desc && item.event.description"
+            class="item-desc"
+            :content="item.event.description"
+          />
         </div>
-        <MarkdownContent v-if="modeFlags.desc && item.event.description" class="item-desc" :content="item.event.description" />
+      </div>
+
+      <div v-if="planItems.length && testItems.length" class="section-divider" aria-hidden="true"></div>
+
+      <div v-if="testItems.length" class="item-section test-section">
+        <div v-for="(item, index) in testItems" :key="`test-${index}`" class="item">
+          <div class="item-line">
+            <span class="type-badge pp-mono">{{ item.meta.label }}</span>
+            <span v-if="modeFlags.title" class="item-title">{{ item.event.label || item.meta.label }}</span>
+            <span v-if="modeFlags.weight && item.weightLabel" class="weight pp-mono">
+              {{ item.weightLabel }}
+            </span>
+          </div>
+          <MarkdownContent
+            v-if="modeFlags.desc && item.event.description"
+            class="item-desc"
+            :content="item.event.description"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -74,6 +95,12 @@ export default {
         weightLabel: weightLabel(event.weight),
       }))
     },
+    planItems() {
+      return this.visibleItems.filter((item) => !item.meta.test)
+    },
+    testItems() {
+      return this.visibleItems.filter((item) => item.meta.test)
+    },
   },
   methods: {
     openGroup() {
@@ -102,11 +129,6 @@ export default {
   box-shadow: var(--shadow);
 }
 
-.event-card.test {
-  border-color: var(--accent-border);
-  border-left: 3px solid var(--accent);
-}
-
 .event-card.dense {
   border-radius: 8px;
   padding: 6px 8px;
@@ -132,7 +154,24 @@ export default {
 .items {
   display: flex;
   flex-direction: column;
+  gap: 0;
+}
+
+.item-section {
+  display: flex;
+  flex-direction: column;
   gap: 5px;
+}
+
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+
+.test-section {
+  border-left: 4px solid var(--accent);
+  padding-left: 8px;
 }
 
 .item {

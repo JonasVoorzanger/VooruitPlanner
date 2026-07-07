@@ -5,22 +5,25 @@
         <span class="chevron">{{ showOld ? '▾' : '▸' }}</span>
         {{ showOld ? 'Verberg oude weken' : 'Toon oude weken' }}
       </button>
-      <button class="old-toggle" @click="collapseAll">Klap alle weken in</button>
+      <button class="old-toggle" @click="toggleAllVisibleWeeks">
+        {{ allVisibleOpen ? 'Klap alle weken in' : 'Klap alle weken uit' }}
+      </button>
     </div>
 
-    <div v-for="week in visibleWeeks" :key="week.week_number" class="week" :class="{ past: week.past }">
+    <div v-for="week in visibleWeeks" :key="`${week.start_date}-${week.week_number}`" class="week">
       <button class="week-head" :class="{ open: week.isOpen }" @click="toggle(week.index)">
         <span class="chevron">{{ week.isOpen ? '▾' : '▸' }}</span>
         <span class="week-label">{{ week.label }}</span>
         <span class="week-range pp-mono">{{ week.range }}</span>
-        <span v-if="week.isCurrent" class="now-badge">nu</span>
-        <span class="summary pp-mono">{{ week.summary }}</span>
+        <span v-if="week.isCurrent" class="status-badge current">nu</span>
+        <span v-else-if="week.past" class="status-badge past">al voorbij</span>
+        <span class="summary pp-mono">{{ week.headerSummary }}</span>
       </button>
 
       <div v-if="week.isOpen" class="week-body">
         <div class="day-col">
           <div class="col-head">Per dag · op datum</div>
-          <div class="day-rows">
+          <div v-if="week.hasDayItems" class="day-rows">
             <div v-for="day in week.days" :key="day.label" class="day-row" :class="{ today: day.isToday }">
               <span class="day-label pp-mono" :class="{ today: day.isToday }">{{ day.label }}</span>
               <div class="day-events">
@@ -35,6 +38,7 @@
               </div>
             </div>
           </div>
+          <div v-else class="day-empty">geen items</div>
         </div>
         <div class="subject-col">
           <div class="col-head">Deze week · per vak</div>
@@ -124,7 +128,17 @@ export default {
       return this.detailLevel === 'compact' ? 'listCompact' : 'listFull'
     },
     hasPast() {
-      return this.todayIndex > 0
+      return this.weeks.some((week) => {
+        const end = parseDate(week.end_date)
+        return end && end < this.today
+      })
+    },
+    allVisibleOpen() {
+      if (!this.visibleWeeks.length) {
+        return false
+      }
+      const openSet = new Set(this.openWeeks)
+      return this.visibleWeeks.every((week) => openSet.has(week.index))
     },
     weekRows() {
       const openSet = new Set(this.openWeeks)
@@ -141,18 +155,28 @@ export default {
             events: schoolWideOnDate(this.events, date, this.year),
           }
         })
+        const hasDayItems = days.some((day) => day.events.length > 0)
 
-        const subjectItems = subjectEventsInWeek(this.events, week.week_number, this.year, this.courses)
+        const subjectItems = subjectEventsInWeek(this.events, week, this.year, this.courses)
         const testCount = subjectItems.filter((event) => typeMeta(event.type).test).length
         const schoolCount = schoolWideInWeek(this.events, week, this.year).length
 
         const parts = []
         if (subjectItems.length) {
-          parts.push(`${subjectItems.length} ${subjectItems.length === 1 ? 'item' : 'items'}`)
+          const toetsLabel = `${testCount} ${testCount === 1 ? 'toets' : 'toetsen'}`
+          const itemLabel = `${subjectItems.length} ${subjectItems.length === 1 ? 'item' : 'items'}`
+          const allItemsAreTests = testCount > 0 && testCount === subjectItems.length
+          parts.push(allItemsAreTests ? toetsLabel : testCount ? `${itemLabel} (incl. ${toetsLabel})` : itemLabel)
         }
-        if (testCount) {
-          parts.push(`${testCount} ${testCount === 1 ? 'toets' : 'toetsen'}`)
+
+        const headerParts = []
+        if (subjectItems.length) {
+          const toetsLabel = `${testCount} ${testCount === 1 ? 'toets' : 'toetsen'}`
+          const itemLabel = `${subjectItems.length} ${subjectItems.length === 1 ? 'item' : 'items'}`
+          const allItemsAreTests = testCount > 0 && testCount === subjectItems.length
+          headerParts.push(allItemsAreTests ? toetsLabel : testCount ? `${itemLabel} (incl. ${toetsLabel})` : itemLabel)
         }
+
         if (schoolCount) {
           parts.push(`${schoolCount} ${schoolCount === 1 ? 'activiteit' : 'activiteiten'}`)
         }
@@ -164,15 +188,26 @@ export default {
           range: `${start.getDate()} – ${formatShort(end)} '${formatYearShort(end)} (wk ${week.week_number})`,
           isCurrent: this.today >= start && this.today <= end,
           isOpen: openSet.has(index),
-          past: index < this.todayIndex,
+          past: end < this.today,
+          hasItems: subjectItems.length > 0 || schoolCount > 0,
+          hasDayItems,
           days,
-          groups: buildWeekGroups(this.events, week.week_number, this.year, this.courses),
+          groups: buildWeekGroups(this.events, week, this.year, this.courses),
+          headerSummary: headerParts.length ? headerParts.join(' · ') : 'geen items',
           summary: parts.length ? parts.join(' · ') : 'geen items',
         }
       })
     },
     visibleWeeks() {
-      return this.showOld ? this.weekRows : this.weekRows.filter((week) => !week.past)
+      return this.weekRows.filter((week) => {
+        if (!week.hasItems) {
+          return false
+        }
+        if (!this.showOld && week.past) {
+          return false
+        }
+        return true
+      })
     },
   },
   methods: {
@@ -185,8 +220,14 @@ export default {
       }
       this.openWeeks = [...openSet]
     },
-    collapseAll() {
-      this.openWeeks = []
+    toggleAllVisibleWeeks() {
+      if (this.allVisibleOpen) {
+        this.openWeeks = this.openWeeks.filter((openIndex) => !this.visibleWeeks.some((week) => week.index === openIndex))
+        return
+      }
+
+      const allVisibleIndexes = this.visibleWeeks.map((week) => week.index)
+      this.openWeeks = [...new Set([...this.openWeeks, ...allVisibleIndexes])]
     },
     openSchoolWide(event) {
       this.$emit('open', { event, whenLabel: schoolWideWhenLabel(event) })
@@ -235,10 +276,6 @@ export default {
   font-size: 11px;
 }
 
-.week.past {
-  opacity: 0.6;
-}
-
 .week-head {
   display: flex;
   align-items: center;
@@ -282,13 +319,22 @@ export default {
   color: var(--muted);
 }
 
-.now-badge {
+.status-badge {
   font-size: 10.5px;
   font-weight: 600;
-  color: var(--on-accent);
-  background: var(--accent);
   border-radius: 6px;
   padding: 2px 7px;
+}
+
+.status-badge.current {
+  color: var(--on-accent);
+  background: var(--accent);
+}
+
+.status-badge.past {
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .summary {
@@ -325,6 +371,12 @@ export default {
 .day-rows {
   display: flex;
   flex-direction: column;
+}
+
+.day-empty {
+  padding: 16px 14px;
+  font-size: 12.5px;
+  color: var(--faint);
 }
 
 .day-row {
@@ -398,7 +450,47 @@ export default {
     border-bottom: 1px solid var(--border);
   }
 
+  .week-head {
+    display: grid;
+    grid-template-columns: 16px 1fr auto;
+    grid-template-areas:
+      'chevron label badge'
+      '. range range'
+      '. summary summary';
+    row-gap: 4px;
+    column-gap: 8px;
+    align-items: start;
+  }
+
+  .week-head .chevron {
+    grid-area: chevron;
+    margin-top: 2px;
+  }
+
+  .week-label {
+    grid-area: label;
+    font-size: 15px;
+  }
+
+  .week-range {
+    grid-area: range;
+    font-size: 12px;
+  }
+
+  .status-badge {
+    grid-area: badge;
+    justify-self: end;
+  }
+
   .summary {
+    grid-area: summary;
+    display: block;
+    margin-left: 0;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  .week-head.open .summary {
     display: none;
   }
 }

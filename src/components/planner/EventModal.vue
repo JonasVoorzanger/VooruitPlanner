@@ -8,21 +8,14 @@
       <div class="modal-body" :class="{ multi: details.length > 1 }">
         <div v-for="(detail, index) in details" :key="index" class="detail-item">
           <div class="badges">
+            <span v-if="detail.subjectAbbreviation" class="subject-abbr pp-mono">{{ detail.subjectAbbreviation }}</span>
             <span class="type-badge pp-mono" :class="{ test: detail.isTest }">{{ detail.typeLabel }}</span>
             <span v-if="detail.weightLabel" class="weight pp-mono">{{ detail.weightLabel }}</span>
           </div>
           <div class="title">{{ detail.title }}</div>
-          <div v-if="detail.subjectName" class="sub-line">{{ detail.subjectName }}</div>
 
           <MarkdownContent v-if="detail.description" class="description" :content="detail.description" />
           <div v-else class="no-description">Geen extra toelichting.</div>
-
-          <div class="meta">
-            <div>
-              <span class="meta-label pp-mono">wanneer</span><br />
-              <span class="meta-value">{{ detail.whenLabel }}</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -118,6 +111,15 @@ export default {
   flex-wrap: wrap;
 }
 
+.subject-abbr {
+  font-weight: 600;
+  font-size: 10.5px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 5px;
+  padding: 1px 7px;
+}
+
 .type-badge {
   font-size: 10.5px;
   font-weight: 600;
@@ -143,12 +145,6 @@ export default {
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.25;
-}
-
-.sub-line {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 4px;
 }
 
 .close {
@@ -192,23 +188,5 @@ export default {
 .no-description {
   font-size: 13.5px;
   color: var(--faint);
-}
-
-.meta {
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 20px;
-  font-size: 12.5px;
-  color: var(--muted);
-}
-
-.meta-label {
-  color: var(--faint);
-}
-
-.meta-value {
-  color: var(--text);
 }
 </style>
