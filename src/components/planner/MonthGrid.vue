@@ -10,7 +10,7 @@
       <div v-for="(row, rowIndex) in rows" :key="rowIndex" class="month-row" :class="{ last: row.last }">
         <div class="week-cell">
           <template v-if="row.week">
-            <div class="week-label pp-mono">Week {{ row.week.week_number }}</div>
+            <div class="week-label pp-mono">{{ weekLabel(row.week) }}</div>
             <div v-if="row.groups.length" class="week-events">
               <EventCard
                 v-for="group in row.groups"
@@ -18,7 +18,7 @@
                 :group="group"
                 :mode="cardMode"
                 :subjects-map="subjectsMap"
-                :when-label="`Week ${row.week.week_number}`"
+                :when-label="weekLabel(row.week)"
                 @open="$emit('open', $event)"
               />
             </div>
@@ -186,6 +186,19 @@ export default {
     },
   },
   methods: {
+    weekLabel(week) {
+      const weekNumber = week.week_number
+      const label = String(week.label || '').trim()
+      if (!label) {
+        return `Week ${weekNumber}`
+      }
+
+      if (label.toLowerCase() === `week ${weekNumber}`.toLowerCase()) {
+        return `Week ${weekNumber}`
+      }
+
+      return `${label} (wk ${weekNumber})`
+    },
     dayCell(date) {
       return {
         num: date.getDate(),

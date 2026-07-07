@@ -27,24 +27,30 @@
         <div class="segments">
           <div class="segment-group">
             <button
-              v-for="option in detailOptions"
-              :key="option.value"
-              class="segment"
-              :class="{ active: detailLevel === option.value }"
-              @click="detailLevel = option.value"
-            >
-              {{ option.label }}
-            </button>
-          </div>
-          <div class="segment-group">
-            <button
               v-for="option in viewOptions"
               :key="option.value"
               class="segment"
               :class="{ active: view === option.value }"
               @click="setView(option.value)"
             >
-              {{ option.label }}
+              <span class="segment-content">
+                <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                <span>{{ option.label }}</span>
+              </span>
+            </button>
+          </div>
+          <div class="segment-group">
+            <button
+              v-for="option in detailOptions"
+              :key="option.value"
+              class="segment"
+              :class="{ active: detailLevel === option.value }"
+              @click="detailLevel = option.value"
+            >
+              <span class="segment-content">
+                <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                <span>{{ option.label }}</span>
+              </span>
             </button>
           </div>
         </div>
@@ -116,12 +122,12 @@ export default {
       monthMonth: today.getMonth(),
       activeDetails: [],
       viewOptions: [
-        { value: 'list', label: 'Lijst' },
-        { value: 'month', label: 'Maand' },
+        { value: 'list', label: 'Lijst', icon: 'mdi-view-list' },
+        { value: 'month', label: 'Maand', icon: 'mdi-calendar-month-outline' },
       ],
       detailOptions: [
-        { value: 'compact', label: 'Compact' },
-        { value: 'full', label: 'Uitgebreid' },
+        { value: 'compact', label: 'Compact', icon: 'mdi-magnify-minus-outline' },
+        { value: 'full', label: 'Uitgebreid', icon: 'mdi-magnify-plus-outline' },
       ],
     }
   },
@@ -427,6 +433,17 @@ export default {
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
+}
+
+.segment-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.segment-content .mdi {
+  font-size: 17px;
+  line-height: 1;
 }
 
 .segment.active {

@@ -22,10 +22,6 @@
               <span class="meta-label pp-mono">wanneer</span><br />
               <span class="meta-value">{{ detail.whenLabel }}</span>
             </div>
-            <div>
-              <span class="meta-label pp-mono">bron</span><br />
-              <span class="meta-value">automatisch ingelezen</span>
-            </div>
           </div>
         </div>
       </div>
