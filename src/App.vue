@@ -1,34 +1,11 @@
 <template>
-  <v-app>
-    <v-navigation-drawer
-      v-model="drawer"
-      color="surface"
-      :temporary="!$vuetify.display.mdAndUp"
-      :permanent="$vuetify.display.mdAndUp"
-      width="260"
-    >
-      <v-list nav>
-        <v-list-subheader>PeriodePlanner</v-list-subheader>
-        <v-list-item
-          v-for="item in navigationItems"
-          :key="item.to"
-          :to="item.to"
-          :prepend-icon="item.icon"
-          :title="item.title"
-          rounded="lg"
-          link
-        />
-      </v-list>
-    </v-navigation-drawer>
-
+  <v-app v-if="isAdminRoute">
     <v-app-bar color="primary" density="comfortable">
-      <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-app-bar-title>PeriodePlanner</v-app-bar-title>
       <template #append>
         <v-btn
           v-for="item in navigationItems"
-          :key="`${item.to}-top`"
-          class="d-none d-md-inline-flex"
+          :key="item.to"
           variant="text"
           color="white"
           :prepend-icon="item.icon"
@@ -43,6 +20,8 @@
       <router-view />
     </v-main>
   </v-app>
+
+  <router-view v-else />
 </template>
 
 <script>
@@ -50,7 +29,6 @@ export default {
   name: 'App',
   data() {
     return {
-      drawer: false,
       navigationItems: [
         { title: 'Planner', to: '/', icon: 'mdi-calendar-month-outline' },
         { title: 'Upload', to: '/upload', icon: 'mdi-file-upload-outline' },
@@ -58,9 +36,9 @@ export default {
       ],
     }
   },
-  watch: {
-    $route() {
-      this.drawer = false
+  computed: {
+    isAdminRoute() {
+      return ['upload', 'settings'].includes(this.$route.name)
     },
   },
 }

@@ -4,10 +4,12 @@ Vue 3 + Vuetify web application for planning school periods from a public Google
 
 ## Features
 
-- Planner view with URL-shareable filters for years, weeks and subjects
+- Onboarding flow to pick a leerjaar and vakken, producing a shareable planner link (`/#/jaar/3/NL.EN.WI`)
+- Week list view with collapsible weeks: school-wide events per day next to subject activities per vak
+- Month view with a "Deze week" summary column, weekday grid and compact weekend column
+- Compact/Uitgebreid detail levels and a light/dark theme toggle
+- Event detail dialog with type, weging and Markdown description
 - Google Sheets CSV loading for weeks, events (school-wide, tests, planning activities) and subjects
-- Markdown rendering for descriptions
-- PDF export of the current planner view
 - Admin upload flow for PDF/DOCX to Claude-powered CSV conversion
 - Settings stored in localStorage for spreadsheet and Claude API configuration
 
