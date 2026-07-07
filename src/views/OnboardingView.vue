@@ -15,7 +15,7 @@
       <div class="section-label">Leerjaar</div>
       <div class="chip-row years">
         <button
-          v-for="option in [1, 2, 3, 4, 5, 6]"
+          v-for="option in [4, 5]"
           :key="option"
           class="year-chip"
           :class="{ active: year === option }"
@@ -46,7 +46,7 @@
         </button>
       </div>
 
-      <button class="confirm" :disabled="!courses.length" @click="confirm">Planner openen</button>
+      <button class="confirm" :disabled="!canConfirm" @click="confirm">Planner openen</button>
 
       <div class="share">
         <span class="share-label pp-mono">jouw link</span>
@@ -77,10 +77,19 @@ export default {
     allCoursesSelected() {
       return this.subjects.length > 0 && this.courses.length === this.subjects.length
     },
+    canConfirm() {
+      return [4, 5].includes(this.year) && this.courses.length > 0
+    },
     plannerPath() {
+      if (!this.canConfirm) {
+        return ''
+      }
       return `/jaar/${this.year}/${this.courses.join('.')}`
     },
     shareUrl() {
+      if (!this.plannerPath) {
+        return 'kies leerjaar en vakken'
+      }
       return `${window.location.host}/#${this.plannerPath}`
     },
   },
@@ -100,7 +109,7 @@ export default {
       }
     },
     confirm() {
-      if (!this.courses.length) {
+      if (!this.canConfirm) {
         return
       }
       saveSelection({ year: this.year, courses: this.courses })

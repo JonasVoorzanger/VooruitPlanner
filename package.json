@@ -12,6 +12,7 @@
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "dompurify": "^3.4.11",
+    "firebase": "^12.15.0",
     "mammoth": "^1.12.0",
     "marked": "^18.0.5",
     "pinia": "^3.0.4",

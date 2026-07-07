@@ -222,7 +222,7 @@ export default {
       if (this.$route.name !== 'planner') {
         return
       }
-      if (!Number.isInteger(this.year) || this.year < 1 || this.year > 6 || !this.courses.length) {
+      if (!Number.isInteger(this.year) || this.year < 4 || this.year > 5 || !this.courses.length) {
         this.$router.replace('/')
         return
       }

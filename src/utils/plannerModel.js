@@ -197,14 +197,15 @@ export function loadSelection() {
       const parsed = JSON.parse(raw)
       const year = Number(parsed.year)
       const courses = Array.isArray(parsed.courses) ? parsed.courses.filter(Boolean) : []
-      if (year >= 1 && year <= 6) {
+      if (year >= 4 && year <= 5) {
         return { year, courses }
       }
+      return { year: null, courses }
     }
   } catch {
     // ignore malformed storage
   }
-  return { year: 3, courses: [] }
+  return { year: null, courses: [] }
 }
 
 export function saveSelection(selection) {
