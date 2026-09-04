@@ -96,6 +96,34 @@ body {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
+/* Export naar A4: de printweergave staat alleen in de DOM tijdens het printen
+   en wisselt met het scherm van plaats. Het papierformaat zelf (staand of
+   liggend) wordt vlak voor het printen gezet — zie src/utils/print.js. */
+.pp-print-root {
+  display: none;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+
+  .pp-screen-only {
+    display: none !important;
+  }
+
+  .pp-print-root {
+    display: block !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+}
+
 /* Admin (Vuetify) pages */
 .page-shell {
   max-width: 1200px;

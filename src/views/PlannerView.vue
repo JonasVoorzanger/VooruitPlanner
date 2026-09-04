@@ -1,5 +1,5 @@
 <template>
-  <div class="screen">
+  <div class="screen pp-screen-only">
     <div class="container">
       <header class="mobile-topbar">
         <button class="menu-btn" aria-label="Open menu" @click="menuOpen = true">
@@ -62,6 +62,24 @@
               </span>
             </button>
           </div>
+          <button
+            class="filter-btn"
+            :class="{ active: testsOnly }"
+            :aria-pressed="testsOnly ? 'true' : 'false'"
+            title="Toon alleen proefwerken, SE's, SO's, presentaties en luistertoetsen"
+            @click="testsOnly = !testsOnly"
+          >
+            <span class="segment-content">
+              <span class="mdi mdi-clipboard-text-clock-outline" aria-hidden="true"></span>
+              <span>Alleen toetsen</span>
+            </span>
+          </button>
+          <button class="filter-btn" title="Exporteren naar A4" @click="openExport()">
+            <span class="segment-content">
+              <span class="mdi mdi-printer-outline" aria-hidden="true"></span>
+              <span>Exporteren</span>
+            </span>
+          </button>
         </div>
       </div>
 
@@ -124,6 +142,25 @@
                   </span>
                 </button>
               </div>
+
+              <button
+                class="filter-btn"
+                :class="{ active: testsOnly }"
+                :aria-pressed="testsOnly ? 'true' : 'false'"
+                @click="testsOnly = !testsOnly"
+              >
+                <span class="segment-content">
+                  <span class="mdi mdi-clipboard-text-clock-outline" aria-hidden="true"></span>
+                  <span>Alleen toetsen</span>
+                </span>
+              </button>
+
+              <button class="filter-btn" @click="openExport(true)">
+                <span class="segment-content">
+                  <span class="mdi mdi-printer-outline" aria-hidden="true"></span>
+                  <span>Exporteren</span>
+                </span>
+              </button>
             </div>
           </div>
         </div>
@@ -132,7 +169,7 @@
       <WeekList
         v-if="view === 'list'"
         :weeks="weeks"
-        :events="events"
+        :events="visibleEvents"
         :subjects-map="subjectsMap"
         :year="year"
         :courses="courses"
@@ -145,7 +182,7 @@
       <MonthGrid
         v-else
         :weeks="weeks"
-        :events="events"
+        :events="visibleEvents"
         :subjects-map="subjectsMap"
         :year="year"
         :courses="courses"
@@ -158,22 +195,54 @@
     </div>
 
     <EventModal v-if="activeDetails.length" :details="activeDetails" @close="activeDetails = []" />
+
+    <ExportDialog
+      v-if="exportOpen"
+      :weeks="weeks"
+      :events="events"
+      :year="year"
+      :courses="courses"
+      :today="today"
+      :initial-view="view"
+      :initial-detail-level="detailLevel"
+      :initial-tests-only="testsOnly"
+      @close="exportOpen = false"
+      @export="runExport"
+    />
+  </div>
+
+  <div v-if="exportSettings" class="pp-print-root">
+    <PrintDocument
+      :weeks="exportSettings.weeks"
+      :events="exportEvents"
+      :subjects-map="subjectsMap"
+      :year="year"
+      :courses="courses"
+      :view="exportSettings.view"
+      :detail-level="exportSettings.detailLevel"
+      :tests-only="exportSettings.testsOnly"
+    />
   </div>
 </template>
 
 <script>
 import EventModal from '../components/planner/EventModal.vue'
+import ExportDialog from '../components/planner/ExportDialog.vue'
 import MonthGrid from '../components/planner/MonthGrid.vue'
+import PrintDocument from '../components/planner/PrintDocument.vue'
 import WeekList from '../components/planner/WeekList.vue'
 import { useTheme } from '../composables/useTheme'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
-import { eventDetail, MONTHS, parseDate, saveSelection } from '../utils/plannerModel'
+import { eventDetail, filterTestsOnly, MONTHS, parseDate, saveSelection } from '../utils/plannerModel'
+import { printAfterRender } from '../utils/print'
 
 export default {
   name: 'PlannerView',
   components: {
     EventModal,
+    ExportDialog,
     MonthGrid,
+    PrintDocument,
     WeekList,
   },
   setup() {
@@ -193,9 +262,12 @@ export default {
       isNarrowScreen: false,
       view: storedView === 'month' ? 'month' : 'list',
       detailLevel: localStorage.getItem('plannerDetailLevel') === 'compact' ? 'compact' : 'full',
+      testsOnly: localStorage.getItem('plannerTestsOnly') === 'true',
       monthYear: today.getFullYear(),
       monthMonth: today.getMonth(),
       activeDetails: [],
+      exportOpen: false,
+      exportSettings: null,
       viewOptions: [
         { value: 'list', label: 'Lijst', icon: 'mdi-view-list' },
         { value: 'month', label: 'Maand', icon: 'mdi-calendar-month-outline' },
@@ -227,6 +299,15 @@ export default {
     },
     events() {
       return this.spreadsheetStore.events
+    },
+    visibleEvents() {
+      return this.testsOnly ? filterTestsOnly(this.events) : this.events
+    },
+    exportEvents() {
+      if (!this.exportSettings) {
+        return []
+      }
+      return this.exportSettings.testsOnly ? filterTestsOnly(this.events) : this.events
     },
     subjectsMap() {
       return this.spreadsheetStore.subjects.reduce((map, subject) => {
@@ -285,6 +366,9 @@ export default {
     detailLevel(value) {
       localStorage.setItem('plannerDetailLevel', value)
     },
+    testsOnly(value) {
+      localStorage.setItem('plannerTestsOnly', String(value))
+    },
     '$route.params': {
       handler() {
         this.validateSelection()
@@ -342,6 +426,17 @@ export default {
     },
     closeMenu() {
       this.menuOpen = false
+    },
+    openExport(shouldCloseMenu = false) {
+      this.exportOpen = true
+      if (shouldCloseMenu) {
+        this.closeMenu()
+      }
+    },
+    runExport(settings) {
+      this.exportOpen = false
+      this.exportSettings = settings
+      printAfterRender(this, settings.view === 'month' ? 'landscape' : 'portrait')
     },
     goToday() {
       this.monthYear = this.anchorDate.getFullYear()
@@ -581,6 +676,38 @@ export default {
   font-size: 12px;
   color: var(--muted);
   margin-top: -2px;
+}
+
+.filter-btn {
+  height: 40px;
+  padding: 0 13px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.filter-btn:hover {
+  color: var(--text);
+  border-color: var(--accent-border);
+}
+
+.filter-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.mobile-segments .filter-btn {
+  width: 100%;
+  justify-content: center;
+  display: flex;
+  align-items: center;
 }
 
 .mobile-menu-overlay {

@@ -84,6 +84,17 @@ export function schoolWideEvents(events) {
   return events.filter((event) => normalizeType(event.type) === 'school-wide')
 }
 
+export function isTestEvent(event) {
+  return typeMeta(event.type).test
+}
+
+// Houdt alleen toetsen over (proefwerk, SE, SO, presentatie, luistertoets).
+// Schoolbrede items blijven staan: vakanties en proefwerkweken zijn juist de
+// context waarin je naar je toetsen kijkt.
+export function filterTestsOnly(events) {
+  return events.filter((event) => normalizeType(event.type) === 'school-wide' || isTestEvent(event))
+}
+
 const YEAR_KEYS = ['year_1', 'year_2', 'year_3', 'year_4', 'year_5', 'year_6']
 
 function matchesYear(event, year) {

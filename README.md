@@ -5,13 +5,58 @@ Vue 3 + Vuetify web application for planning school periods from a public Google
 ## Features
 
 - Onboarding flow to pick a leerjaar and vakken, producing a shareable planner link (`/#/jaar/3/NL.EN.WI`)
+- Profile shortcuts (C&M, E&M, N&G, N&T) that fill the vakkenpakket in one click
 - Week list view with collapsible weeks: school-wide events per day next to subject activities per vak
 - Month view with a "Deze week" summary column, weekday grid and compact weekend column
-- Compact/Uitgebreid detail levels and a light/dark theme toggle
+- Compact/Uitgebreid detail levels, an "Alleen toetsen" filter and a light/dark theme toggle
+- A4 export of the list or month view, with per-week selection
 - Event detail dialog with type, weging and Markdown description
 - Google Sheets CSV loading for weeks, events (school-wide, tests, planning activities) and subjects
 - Admin upload flow for PDF/DOCX to Claude-powered CSV conversion
 - Settings stored in localStorage for spreadsheet and Claude API configuration
+
+## Profiles
+
+The quick-select buttons under *Profiel* on the onboarding screen are defined in
+[`src/data/profiles.js`](src/data/profiles.js). Each profile lists its vakken per
+leerjaar, on top of the shared `COMMON_COURSES`:
+
+```js
+{
+  id: 'nt',
+  label: 'N&T',
+  name: 'Natuur & Techniek',
+  courses: {
+    4: ['NA', 'SK', 'WB', 'BIO'],
+    5: ['NA', 'SK', 'WB', 'WD', 'NLT'],
+  },
+}
+```
+
+Use the abbreviations from the `subjects` tab. Abbreviations that do not exist in
+the spreadsheet are skipped silently. The lists shipped in that file are
+placeholders — replace them with the school's actual vakkenpakketten.
+
+## Export to A4
+
+The *Exporteren* button in the planner opens a dialog where a student picks the
+view (list or month), the detail level, whether to limit the export to toetsen,
+and exactly which weeks to include. The export then opens the browser print
+dialog; choosing *Save as PDF* there produces a file.
+
+The list view prints on A4 portrait and the month view on A4 landscape — the page
+size is written into a `@page` rule right before printing (see
+[`src/utils/print.js`](src/utils/print.js)). The print layout lives in
+[`PrintDocument.vue`](src/components/planner/PrintDocument.vue) and always uses
+the light palette, so a dark-themed planner does not print as a black page.
+
+## School-wide events
+
+[`schoolwide-events-2026-2027.csv`](schoolwide-events-2026-2027.csv) holds the
+school-wide items from the jaaragenda that matter to leerjaar 4 and 5 —
+vakanties, proefwerkweken, SE-periodes, rapportmomenten, ouderavonden and
+schoolbrede activiteiten. The columns match the `events` tab exactly, so the rows
+can be pasted straight into the spreadsheet.
 
 ## Setup
 
@@ -56,6 +101,9 @@ All items — school-wide events, holidays, subject activities, and tests — li
 | `type` value | Description |
 | ------------ | ----------- |
 | `school-wide` | Announcements, holidays, studiedagen, etc. |
+
+School-wide items are never hidden by the "Alleen toetsen" filter: vakanties and
+proefwerkweken are the context you read your toetsen in.
 
 **Subject types** (appear inside the subject section, matched to weeks via `cal_year` + `cal_week_number`):
 

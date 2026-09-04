@@ -25,6 +25,22 @@
         </button>
       </div>
 
+      <div class="section-label">Profiel</div>
+      <p v-if="!year" class="profile-hint">Kies eerst een leerjaar om een profiel te gebruiken.</p>
+      <div class="chip-row profiles">
+        <button
+          v-for="profile in profiles"
+          :key="profile.id"
+          class="profile-chip"
+          :class="{ active: activeProfileId === profile.id }"
+          :disabled="!year"
+          :title="profile.name"
+          @click="applyProfile(profile)"
+        >
+          {{ profile.label }}
+        </button>
+      </div>
+
       <div class="section-head">
         <div class="section-label">Vakken</div>
         <div class="section-actions">
@@ -57,6 +73,7 @@
 </template>
 
 <script>
+import { availableProfileCourses, PROFILES } from '../data/profiles'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
 import { loadSelection, saveSelection } from '../utils/plannerModel'
 
@@ -68,11 +85,24 @@ export default {
       spreadsheetStore: useSpreadsheetStore(),
       year: selection.year,
       courses: [...selection.courses],
+      profiles: PROFILES,
     }
   },
   computed: {
     subjects() {
       return this.spreadsheetStore.subjects
+    },
+    // Highlights the profile whose vakkenpakket matches the current selection.
+    activeProfileId() {
+      if (!this.year || !this.courses.length) {
+        return null
+      }
+
+      const selected = [...this.courses].sort().join('.')
+      const match = this.profiles.find(
+        (profile) => availableProfileCourses(profile, this.year, this.subjects).sort().join('.') === selected,
+      )
+      return match ? match.id : null
     },
     allCoursesSelected() {
       return this.subjects.length > 0 && this.courses.length === this.subjects.length
@@ -100,6 +130,15 @@ export default {
       } else {
         this.courses = [...this.courses, abbreviation]
       }
+    },
+    applyProfile(profile) {
+      if (!this.year) {
+        return
+      }
+
+      const profileSelection = availableProfileCourses(profile, this.year, this.subjects)
+      // Klikken op het actieve profiel maakt de keuze weer leeg.
+      this.courses = this.activeProfileId === profile.id ? [] : profileSelection
     },
     toggleAllCourses() {
       if (this.allCoursesSelected) {
@@ -232,8 +271,46 @@ export default {
   margin-bottom: 24px;
 }
 
+.chip-row.profiles {
+  margin-bottom: 24px;
+}
+
 .chip-row.subjects {
   margin-bottom: 26px;
+}
+
+.profile-hint {
+  font-size: 12.5px;
+  color: var(--faint);
+  margin: -4px 0 10px;
+}
+
+.profile-chip {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.profile-chip:hover:not(:disabled) {
+  border-color: var(--accent-border);
+}
+
+.profile-chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.profile-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .year-chip {
