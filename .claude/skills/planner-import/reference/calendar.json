@@ -1,0 +1,229 @@
+{
+  "spreadsheet_id": "1FdRh5rWw4Mybxa3FpddUm62BbhS3hSs8QuAQHVu4Pyk",
+  "weeks": [
+    {
+      "week_number": 33,
+      "start_date": "2025-08-11",
+      "end_date": "2025-08-18",
+      "label": "Zomervakantie"
+    },
+    {
+      "week_number": 34,
+      "start_date": "2025-08-18",
+      "end_date": "2025-08-25",
+      "label": "Zomervakantie"
+    },
+    {
+      "week_number": 35,
+      "start_date": "2025-08-25",
+      "end_date": "2025-09-01",
+      "label": "Lesweek 1"
+    },
+    {
+      "week_number": 36,
+      "start_date": "2025-09-01",
+      "end_date": "2025-09-08",
+      "label": "Lesweek 2"
+    },
+    {
+      "week_number": 37,
+      "start_date": "2025-09-08",
+      "end_date": "2025-09-15",
+      "label": "Lesweek 3"
+    },
+    {
+      "week_number": 38,
+      "start_date": "2025-09-15",
+      "end_date": "2025-09-22",
+      "label": "Lesweek 4"
+    },
+    {
+      "week_number": 39,
+      "start_date": "2025-09-22",
+      "end_date": "2025-09-29",
+      "label": "Lesweek 5"
+    },
+    {
+      "week_number": 40,
+      "start_date": "2025-09-29",
+      "end_date": "2025-10-06",
+      "label": "Lesweek 6"
+    },
+    {
+      "week_number": 41,
+      "start_date": "2025-10-06",
+      "end_date": "2025-10-13",
+      "label": "Lesweek 7"
+    },
+    {
+      "week_number": 42,
+      "start_date": "2025-10-13",
+      "end_date": "2025-10-20",
+      "label": "Reizen / Activiteitenweek"
+    },
+    {
+      "week_number": 43,
+      "start_date": "2025-10-20",
+      "end_date": "2025-10-27",
+      "label": "Herfstvakantie"
+    },
+    {
+      "week_number": 44,
+      "start_date": "2025-10-27",
+      "end_date": "2025-11-03",
+      "label": "Lesweek 8"
+    },
+    {
+      "week_number": 45,
+      "start_date": "2025-11-03",
+      "end_date": "2025-11-10",
+      "label": "Lesweek 9"
+    },
+    {
+      "week_number": 46,
+      "start_date": "2025-11-10",
+      "end_date": "2025-11-17",
+      "label": "Lesweek 10"
+    },
+    {
+      "week_number": 47,
+      "start_date": "2025-11-17",
+      "end_date": "2025-11-24",
+      "label": "Toetsweek / SE-week"
+    }
+  ],
+  "subjects": [
+    {
+      "abbreviation": "AK",
+      "full_name": "Aardrijkskunde"
+    },
+    {
+      "abbreviation": "BECO",
+      "full_name": "Bedrijfseconomie"
+    },
+    {
+      "abbreviation": "BIO",
+      "full_name": "Biologie"
+    },
+    {
+      "abbreviation": "CKV",
+      "full_name": "Culturele Kunstzinnige Vorming"
+    },
+    {
+      "abbreviation": "CPB",
+      "full_name": "Coaching Project Bovenbouw"
+    },
+    {
+      "abbreviation": "DF",
+      "full_name": "DELF"
+    },
+    {
+      "abbreviation": "DU",
+      "full_name": "Duits"
+    },
+    {
+      "abbreviation": "EC",
+      "full_name": "Economie"
+    },
+    {
+      "abbreviation": "EN",
+      "full_name": "Engels"
+    },
+    {
+      "abbreviation": "FI",
+      "full_name": "Filosofie"
+    },
+    {
+      "abbreviation": "FLE",
+      "full_name": "Fast Lane English"
+    },
+    {
+      "abbreviation": "FR",
+      "full_name": "Frans"
+    },
+    {
+      "abbreviation": "GR",
+      "full_name": "Grieks"
+    },
+    {
+      "abbreviation": "GS",
+      "full_name": "Geschiedenis"
+    },
+    {
+      "abbreviation": "HA",
+      "full_name": "Handvaardigheid"
+    },
+    {
+      "abbreviation": "IN",
+      "full_name": "Informatica"
+    },
+    {
+      "abbreviation": "IT",
+      "full_name": "Italiaans"
+    },
+    {
+      "abbreviation": "KG",
+      "full_name": "Kunstgeschiedenis"
+    },
+    {
+      "abbreviation": "LA",
+      "full_name": "Latijn"
+    },
+    {
+      "abbreviation": "LO",
+      "full_name": "Lichamelijke opvoeding"
+    },
+    {
+      "abbreviation": "MAW",
+      "full_name": "Maatschappijwetenschappen"
+    },
+    {
+      "abbreviation": "ML",
+      "full_name": "Maatschappijleer"
+    },
+    {
+      "abbreviation": "NA",
+      "full_name": "Natuurkunde"
+    },
+    {
+      "abbreviation": "NL",
+      "full_name": "Nederlands"
+    },
+    {
+      "abbreviation": "NLT",
+      "full_name": "Natuur, Leven & Technologie"
+    },
+    {
+      "abbreviation": "SK",
+      "full_name": "Scheikunde"
+    },
+    {
+      "abbreviation": "SP",
+      "full_name": "Spaans"
+    },
+    {
+      "abbreviation": "TE",
+      "full_name": "Tekenen"
+    },
+    {
+      "abbreviation": "WA",
+      "full_name": "Wiskunde A"
+    },
+    {
+      "abbreviation": "WB",
+      "full_name": "Wiskunde B"
+    },
+    {
+      "abbreviation": "WC",
+      "full_name": "Wiskunde C"
+    },
+    {
+      "abbreviation": "WD",
+      "full_name": "Wiskunde D"
+    },
+    {
+      "abbreviation": "WI",
+      "full_name": "Wiskunde"
+    }
+  ]
+}
