@@ -32,6 +32,20 @@
         </div>
         <div class="range-label">{{ rangeLabel }}</div>
         <div class="segments">
+          <div v-if="view !== 'subject'" class="segment-group">
+            <button
+              v-for="option in detailOptions"
+              :key="option.value"
+              class="segment"
+              :class="{ active: detailLevel === option.value }"
+              @click="detailLevel = option.value"
+            >
+              <span class="segment-content">
+                <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                <span>{{ option.label }}</span>
+              </span>
+            </button>
+          </div>
           <div class="segment-group">
             <button
               v-for="option in viewOptions"
@@ -48,20 +62,6 @@
             </button>
           </div>
           <div v-if="isNarrowScreen" class="view-hint">Maand-weergave alleen op grote schermen</div>
-          <div class="segment-group">
-            <button
-              v-for="option in detailOptions"
-              :key="option.value"
-              class="segment"
-              :class="{ active: detailLevel === option.value }"
-              @click="detailLevel = option.value"
-            >
-              <span class="segment-content">
-                <span class="mdi" :class="option.icon" aria-hidden="true"></span>
-                <span>{{ option.label }}</span>
-              </span>
-            </button>
-          </div>
           <div ref="filterWrap" class="filter-wrap">
             <button
               class="filter-btn"
@@ -127,6 +127,21 @@
             <div class="range-label">{{ rangeLabel }}</div>
 
             <div class="segments mobile-segments">
+              <div v-if="view !== 'subject'" class="segment-group">
+                <button
+                  v-for="option in detailOptions"
+                  :key="`menu-detail-${option.value}`"
+                  class="segment"
+                  :class="{ active: detailLevel === option.value }"
+                  @click="setDetailLevel(option.value, true)"
+                >
+                  <span class="segment-content">
+                    <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                    <span>{{ option.label }}</span>
+                  </span>
+                </button>
+              </div>
+
               <div class="segment-group">
                 <button
                   v-for="option in viewOptions"
@@ -143,21 +158,6 @@
                 </button>
               </div>
               <div v-if="isNarrowScreen" class="view-hint">Maand-weergave alleen op grote schermen</div>
-
-              <div class="segment-group">
-                <button
-                  v-for="option in detailOptions"
-                  :key="`menu-detail-${option.value}`"
-                  class="segment"
-                  :class="{ active: detailLevel === option.value }"
-                  @click="setDetailLevel(option.value, true)"
-                >
-                  <span class="segment-content">
-                    <span class="mdi" :class="option.icon" aria-hidden="true"></span>
-                    <span>{{ option.label }}</span>
-                  </span>
-                </button>
-              </div>
 
               <div class="mobile-filter">
                 <div class="mobile-filter-label">Filter</div>
@@ -189,8 +189,21 @@
         </div>
       </div>
 
+      <SubjectView
+        v-if="view === 'subject'"
+        :weeks="weeks"
+        :events="visibleEvents"
+        :subjects-map="subjectsMap"
+        :year="year"
+        :courses="courses"
+        :course="subjectCourse"
+        :today="today"
+        @update:course="setSubjectCourse"
+        @open="openEvent"
+      />
+
       <WeekList
-        v-if="view === 'list'"
+        v-else-if="view === 'list'"
         :weeks="weeks"
         :events="visibleEvents"
         :all-events="events"
@@ -204,7 +217,7 @@
       />
 
       <MonthGrid
-        v-else
+        v-else-if="view === 'month'"
         :weeks="weeks"
         :events="visibleEvents"
         :subjects-map="subjectsMap"
@@ -254,6 +267,7 @@ import EventModal from '../components/planner/EventModal.vue'
 import ExportDialog from '../components/planner/ExportDialog.vue'
 import MonthGrid from '../components/planner/MonthGrid.vue'
 import PrintDocument from '../components/planner/PrintDocument.vue'
+import SubjectView from '../components/planner/SubjectView.vue'
 import WeekList from '../components/planner/WeekList.vue'
 import { useTheme } from '../composables/useTheme'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
@@ -277,6 +291,7 @@ export default {
     ExportDialog,
     MonthGrid,
     PrintDocument,
+    SubjectView,
     WeekList,
   },
   setup() {
@@ -294,7 +309,8 @@ export default {
       today,
       menuOpen: false,
       isNarrowScreen: false,
-      view: storedView === 'month' ? 'month' : 'list',
+      view: ['month', 'subject'].includes(storedView) ? storedView : 'list',
+      subjectCourse: localStorage.getItem('plannerSubjectCourse') || '',
       detailLevel: localStorage.getItem('plannerDetailLevel') === 'compact' ? 'compact' : 'full',
       filters: loadFilters(),
       filterOpen: false,
@@ -306,6 +322,7 @@ export default {
       viewOptions: [
         { value: 'list', label: 'Lijst', icon: 'mdi-view-list' },
         { value: 'month', label: 'Maand', icon: 'mdi-calendar-month-outline' },
+        { value: 'subject', label: 'Per vak', icon: 'mdi-book-open-page-variant-outline' },
       ],
       detailOptions: [
         { value: 'compact', label: 'Compact', icon: 'mdi-magnify-minus-outline' },
@@ -391,6 +408,9 @@ export default {
       if (this.view === 'month') {
         return `${MONTHS[this.monthMonth]} ${this.monthYear}`
       }
+      if (this.view === 'subject') {
+        return this.subjectsMap[this.subjectCourse] || this.subjectCourse || 'Per vak'
+      }
       return 'Komende weken'
     },
     themeIcon() {
@@ -407,6 +427,9 @@ export default {
     },
     detailLevel(value) {
       localStorage.setItem('plannerDetailLevel', value)
+    },
+    subjectCourse(value) {
+      localStorage.setItem('plannerSubjectCourse', value)
     },
     filters: {
       handler(value) {
@@ -446,6 +469,16 @@ export default {
         return
       }
       saveSelection({ year: this.year, courses: this.courses })
+      this.validateSubjectCourse()
+    },
+    // Valt terug op het eerste vak zodra het bewaarde vak niet meer gekozen is.
+    validateSubjectCourse() {
+      if (!this.courses.includes(this.subjectCourse)) {
+        this.subjectCourse = this.courses[0] || ''
+      }
+    },
+    setSubjectCourse(course) {
+      this.subjectCourse = course
     },
     setView(view, shouldCloseMenu = false) {
       if (this.isNarrowScreen && view === 'month') {

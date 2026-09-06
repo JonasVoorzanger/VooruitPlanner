@@ -6,8 +6,9 @@ Vue 3 + Vuetify web application for planning school periods from a public Google
 
 - Onboarding flow to pick a leerjaar and vakken, producing a shareable planner link (`/#/jaar/3/NL.EN.WI`)
 - Profile shortcuts (C&M, E&M, N&G, N&T) that fill the vakkenpakket in one click
-- Week list view with collapsible weeks: school-wide events per day next to subject activities per vak
-- Month view with a "Deze week" summary column, weekday grid and compact weekend column
+- Three views over the same data: **Lijst** (scroll the whole year, weeks collapse and expand), **Maand** (one month at a glance, nothing to unfold) and **Per vak** (one subject, every week, all detail visible)
+- Lijst and Maand share the same split: vakken per week on the left, the days of that week stacked on the right
+- Per vak shows weeks without items for that subject as a minimal grey divider, so gaps stay visible
 - Compact/Uitgebreid detail levels, a Filter menu (Toetsen / Planning / Overig) and a light/dark theme toggle
 - A4 export of the list or month view, with per-week selection
 - Event detail dialog with type, weging and Markdown description

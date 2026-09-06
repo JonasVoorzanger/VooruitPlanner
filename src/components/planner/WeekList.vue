@@ -295,7 +295,6 @@ export default {
   cursor: pointer;
   font-family: inherit;
   color: var(--text);
-  box-shadow: var(--shadow);
   transition: border-color 0.12s;
 }
 
