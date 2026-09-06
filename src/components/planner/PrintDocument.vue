@@ -9,8 +9,8 @@
         <span class="pp-mono">{{ courses.join(' · ') }}</span>
         <span class="dot">·</span>
         <span>{{ rangeLabel }}</span>
-        <span v-if="testsOnly" class="dot">·</span>
-        <span v-if="testsOnly">alleen toetsen</span>
+        <span v-if="filterLabel" class="dot">·</span>
+        <span v-if="filterLabel">{{ filterLabel }}</span>
       </div>
     </header>
 
@@ -129,6 +129,7 @@ import {
   buildWeekGroups,
   formatShort,
   formatYearShort,
+  filtersLabel,
   isTestEvent,
   MONTHS,
   parseDate,
@@ -173,12 +174,15 @@ export default {
       type: String,
       default: 'full',
     },
-    testsOnly: {
-      type: Boolean,
-      default: false,
+    filters: {
+      type: Object,
+      default: null,
     },
   },
   computed: {
+    filterLabel() {
+      return filtersLabel(this.filters)
+    },
     cardMode() {
       if (this.view === 'month') {
         return this.detailLevel === 'compact' ? 'monthCompact' : 'monthFull'
@@ -405,8 +409,9 @@ export default {
   width: 5.5mm;
   height: 5.5mm;
   border-radius: 1.4mm;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -72,6 +72,11 @@ function parseCsv(text) {
     })
 }
 
+// De kolommen in de `subjects` tab die per profiel en leerjaar aangeven of een
+// vak in de snelkeuze hoort. Houd dit gelijk aan PROFILE_COLUMNS in
+// src/data/profiles.js.
+const PROFILE_COLUMNS = ['4_CM', '5_CM', '4_EM', '5_EM', '4_NG', '5_NG', '4_NT', '5_NT']
+
 function parseBooleanFlag(value) {
   return ['1', 'true', 'yes', 'x'].includes(String(value || '').trim().toLowerCase())
 }
@@ -130,6 +135,12 @@ async function main() {
     .map((row) => ({
       abbreviation: row.abbreviation.toUpperCase(),
       full_name: row.full_name,
+      // Eén vinkje per profiel/leerjaar-kolom (4_CM, 5_CM, 4_EM, ...) bepaalt of
+      // het vak in die snelkeuze zit.
+      profiles: PROFILE_COLUMNS.reduce((flags, column) => {
+        flags[column] = parseBooleanFlag(row[column])
+        return flags
+      }, {}),
     }))
     .sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
 

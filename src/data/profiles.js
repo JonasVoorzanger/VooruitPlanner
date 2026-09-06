@@ -1,72 +1,38 @@
 // Profielen voor de snelkeuze op het onboardingscherm.
 //
 // ── Hier pas je de vakken aan ────────────────────────────────────────────────
-// Vul per profiel en per leerjaar de afkortingen in die in de `subjects` tab van
-// de spreadsheet staan (zie src/data/spreadsheet.json). Afkortingen die niet in
-// de spreadsheet voorkomen worden stil overgeslagen, dus een profiel kapot maken
-// kan niet — er verschijnen dan simpelweg minder vakken.
-//
-// De lijsten hieronder zijn voorlopige standaardwaarden; vervang ze door de
-// echte vakkenpakketten van de school.
+// Niet hier, maar in de spreadsheet. De `subjects` tab heeft per profiel en
+// leerjaar een kolom met een vinkje: 4_CM, 5_CM, 4_EM, 5_EM, 4_NG, 5_NG, 4_NT
+// en 5_NT. Staat het vinkje aan (TRUE), dan hoort het vak bij die snelkeuze.
+// Draai `npm run load-data` om de wijzigingen op te halen.
 
-export const COMMON_COURSES = {
-  4: ['NL', 'EN', 'LO', 'CKV', 'ML'],
-  5: ['NL', 'EN', 'LO', 'CPB'],
-}
+// Kolomnamen in de `subjects` tab. Houd dit gelijk aan PROFILE_COLUMNS in
+// scripts/load-data.js.
+export const PROFILE_COLUMNS = ['4_CM', '5_CM', '4_EM', '5_EM', '4_NG', '5_NG', '4_NT', '5_NT']
 
 export const PROFILES = [
-  {
-    id: 'cm',
-    label: 'C&M',
-    name: 'Cultuur & Maatschappij',
-    courses: {
-      4: ['GS', 'AK', 'KG', 'FI', 'FR'],
-      5: ['GS', 'AK', 'KG', 'FI', 'FR', 'MAW'],
-    },
-  },
-  {
-    id: 'em',
-    label: 'E&M',
-    name: 'Economie & Maatschappij',
-    courses: {
-      4: ['ECO', 'GS', 'AK', 'WA'],
-      5: ['ECO', 'GS', 'AK', 'WA', 'BECO'],
-    },
-  },
-  {
-    id: 'ng',
-    label: 'N&G',
-    name: 'Natuur & Gezondheid',
-    courses: {
-      4: ['BIO', 'SK', 'NA', 'WA'],
-      5: ['BIO', 'SK', 'NA', 'WA', 'AK'],
-    },
-  },
-  {
-    id: 'nt',
-    label: 'N&T',
-    name: 'Natuur & Techniek',
-    courses: {
-      4: ['NA', 'SK', 'WB', 'BIO'],
-      5: ['NA', 'SK', 'WB', 'WD', 'NLT'],
-    },
-  },
+  { id: 'cm', key: 'CM', label: 'C&M', name: 'Cultuur & Maatschappij' },
+  { id: 'em', key: 'EM', label: 'E&M', name: 'Economie & Maatschappij' },
+  { id: 'ng', key: 'NG', label: 'N&G', name: 'Natuur & Gezondheid' },
+  { id: 'nt', key: 'NT', label: 'N&T', name: 'Natuur & Techniek' },
 ]
 
-// Combineert de gemeenschappelijke vakken met de profielvakken voor één
-// leerjaar, zonder dubbelingen en met behoud van de volgorde hierboven.
-export function profileCourses(profile, year) {
-  if (!profile) {
+// De kolom in de `subjects` tab die bij dit profiel en leerjaar hoort.
+export function profileColumn(profile, year) {
+  if (!profile || !profile.key || !year) {
+    return ''
+  }
+  return `${year}_${profile.key}`
+}
+
+// De vakken die in de spreadsheet zijn aangevinkt voor dit profiel en leerjaar.
+export function availableProfileCourses(profile, year, subjects = []) {
+  const column = profileColumn(profile, year)
+  if (!column) {
     return []
   }
 
-  const common = COMMON_COURSES[year] || []
-  const specific = (profile.courses && profile.courses[year]) || []
-  return [...new Set([...common, ...specific])]
-}
-
-// Alleen de vakken die ook echt in de spreadsheet staan.
-export function availableProfileCourses(profile, year, subjects) {
-  const known = new Set(subjects.map((subject) => subject.abbreviation))
-  return profileCourses(profile, year).filter((abbreviation) => known.has(abbreviation))
+  return subjects
+    .filter((subject) => Boolean(subject.profiles && subject.profiles[column]))
+    .map((subject) => subject.abbreviation)
 }

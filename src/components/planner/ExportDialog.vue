@@ -40,10 +40,20 @@
           </div>
         </div>
 
-        <label class="checkbox-line">
-          <input v-model="testsOnly" type="checkbox" />
-          <span>Alleen toetsen (proefwerk, SE, SO, presentatie, luistertoets)</span>
-        </label>
+        <div class="field">
+          <div class="field-label">Filter</div>
+          <div class="checkbox-row">
+            <label v-for="option in filterOptions" :key="option.value" class="checkbox-line">
+              <input
+                type="checkbox"
+                :checked="filters[option.value]"
+                @change="toggleFilter(option.value)"
+              />
+              <span>{{ option.label }}</span>
+            </label>
+          </div>
+          <div class="field-hint">Overig zijn de schoolbrede activiteiten en vakanties.</div>
+        </div>
 
         <div class="field">
           <div class="field-head">
@@ -90,10 +100,12 @@
 
 <script>
 import {
-  filterTestsOnly,
+  FILTER_CATEGORIES,
+  filterEventsByCategory,
   formatShort,
   formatYearShort,
   isTestEvent,
+  normalizeFilters,
   parseDate,
   schoolWideInWeek,
   subjectEventsInWeek,
@@ -130,9 +142,9 @@ export default {
       type: String,
       default: 'full',
     },
-    initialTestsOnly: {
-      type: Boolean,
-      default: false,
+    initialFilters: {
+      type: Object,
+      default: null,
     },
   },
   emits: ['close', 'export'],
@@ -140,7 +152,7 @@ export default {
     return {
       view: this.initialView === 'month' ? 'month' : 'list',
       detailLevel: this.initialDetailLevel === 'compact' ? 'compact' : 'full',
-      testsOnly: this.initialTestsOnly,
+      filters: normalizeFilters(this.initialFilters),
       selectedKeys: [],
       viewOptions: [
         { value: 'list', label: 'Lijst', icon: 'mdi-view-list' },
@@ -150,11 +162,12 @@ export default {
         { value: 'compact', label: 'Compact', icon: 'mdi-magnify-minus-outline' },
         { value: 'full', label: 'Uitgebreid', icon: 'mdi-magnify-plus-outline' },
       ],
+      filterOptions: FILTER_CATEGORIES,
     }
   },
   computed: {
     exportEvents() {
-      return this.testsOnly ? filterTestsOnly(this.events) : this.events
+      return filterEventsByCategory(this.events, this.filters)
     },
     orientationHint() {
       return this.view === 'month'
@@ -212,6 +225,9 @@ export default {
         this.close()
       }
     },
+    toggleFilter(category) {
+      this.filters = { ...this.filters, [category]: !this.filters[category] }
+    },
     isSelected(key) {
       return this.selectedKeys.includes(key)
     },
@@ -245,7 +261,7 @@ export default {
       this.$emit('export', {
         view: this.view,
         detailLevel: this.detailLevel,
-        testsOnly: this.testsOnly,
+        filters: { ...this.filters },
         weeks: this.selectedWeeks.map((row) => row.week),
       })
     },
@@ -385,6 +401,12 @@ export default {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
+}
+
+.checkbox-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
 }
 
 .checkbox-line {

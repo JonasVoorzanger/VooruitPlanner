@@ -185,11 +185,12 @@ export default {
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: var(--accent);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--on-accent);
+  color: var(--muted);
   font-weight: 700;
   font-size: 15px;
 }

@@ -120,13 +120,26 @@ export default {
   flex-direction: column;
   gap: 6px;
   width: 100%;
-  transition: border-color 0.12s, box-shadow 0.12s;
+  /* Kaarten zweven net boven hun ondergrond, zodat ze niet wegvallen. */
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
   cursor: pointer;
 }
 
 .event-card:hover {
   border-color: var(--accent-border);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-card {
+    transition: border-color 0.12s, box-shadow 0.12s;
+  }
+
+  .event-card:hover {
+    transform: none;
+  }
 }
 
 .event-card.dense {

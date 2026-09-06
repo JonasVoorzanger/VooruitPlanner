@@ -10,6 +10,14 @@
       </button>
     </div>
 
+    <p v-if="showEmptySelectionWarning" class="selection-warning">
+      <span class="mdi mdi-information-outline" aria-hidden="true"></span>
+      <span>
+        Geen items gevonden voor deze vakken{{ filteredOut ? ' met het huidige filter' : '' }}. De weken
+        hieronder blijven staan, maar er staat nog niets van jouw vakken in.
+      </span>
+    </p>
+
     <div v-for="week in visibleWeeks" :key="`${week.start_date}-${week.week_number}`" class="week">
       <button class="week-head" :class="{ open: week.isOpen }" @click="toggle(week.index)">
         <span class="chevron">{{ week.isOpen ? '▾' : '▸' }}</span>
@@ -21,25 +29,6 @@
       </button>
 
       <div v-if="week.isOpen" class="week-body">
-        <div class="day-col">
-          <div class="col-head">Per dag · op datum</div>
-          <div v-if="week.hasDayItems" class="day-rows">
-            <div v-for="day in week.days" :key="day.label" class="day-row" :class="{ today: day.isToday }">
-              <span class="day-label pp-mono" :class="{ today: day.isToday }">{{ day.label }}</span>
-              <div class="day-events">
-                <div
-                  v-for="(event, index) in day.events"
-                  :key="index"
-                  class="day-event"
-                  @click="openSchoolWide(event)"
-                >
-                  {{ event.label }}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-else class="day-empty">geen items</div>
-        </div>
         <div class="subject-col">
           <div class="col-head">Deze week · per vak</div>
           <div v-if="week.groups.length" class="subject-grid">
@@ -55,31 +44,34 @@
           </div>
           <div v-else class="empty">Geen vakactiviteiten deze week.</div>
         </div>
+        <div class="days-col">
+          <div class="col-head">Per dag · op datum</div>
+          <DayRows :days="week.days" @open="openSchoolWide" />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import DayRows from './DayRows.vue'
 import EventCard from './EventCard.vue'
 import {
-  addDays,
+  buildDayRows,
   buildWeekGroups,
   formatShort,
   formatYearShort,
   parseDate,
-  sameDay,
   schoolWideInWeek,
-  schoolWideOnDate,
   schoolWideWhenLabel,
   subjectEventsInWeek,
   typeMeta,
-  WEEKDAYS,
 } from '../../utils/plannerModel'
 
 export default {
   name: 'WeekList',
   components: {
+    DayRows,
     EventCard,
   },
   props: {
@@ -90,6 +82,10 @@ export default {
     events: {
       type: Array,
       required: true,
+    },
+    allEvents: {
+      type: Array,
+      default: () => [],
     },
     subjectsMap: {
       type: Object,
@@ -147,16 +143,6 @@ export default {
         const start = parseDate(week.start_date)
         const end = parseDate(week.end_date)
 
-        const days = WEEKDAYS.map((weekday, dayIndex) => {
-          const date = addDays(start, dayIndex)
-          return {
-            label: `${weekday} ${date.getDate()}`,
-            isToday: sameDay(date, this.today),
-            events: schoolWideOnDate(this.events, date, this.year),
-          }
-        })
-        const hasDayItems = days.some((day) => day.events.length > 0)
-
         const subjectItems = subjectEventsInWeek(this.events, week, this.year, this.courses)
         const testCount = subjectItems.filter((event) => typeMeta(event.type).test).length
         const schoolCount = schoolWideInWeek(this.events, week, this.year).length
@@ -189,9 +175,8 @@ export default {
           isCurrent: this.today >= start && this.today <= end,
           isOpen: openSet.has(index),
           past: end < this.today,
-          hasItems: subjectItems.length > 0 || schoolCount > 0,
-          hasDayItems,
-          days,
+          hasSubjectItems: subjectItems.length > 0,
+          days: buildDayRows(this.events, start, this.year, this.today),
           groups: buildWeekGroups(this.events, week, this.year, this.courses),
           headerSummary: headerParts.length ? headerParts.join(' · ') : 'geen items',
           summary: parts.length ? parts.join(' · ') : 'geen items',
@@ -199,15 +184,18 @@ export default {
       })
     },
     visibleWeeks() {
-      return this.weekRows.filter((week) => {
-        if (!week.hasItems) {
-          return false
-        }
-        if (!this.showOld && week.past) {
-          return false
-        }
-        return true
-      })
+      // Lege weken blijven staan: dat zijn meestal vakanties, en juist die zijn
+      // nuttig om te zien bij het plannen.
+      return this.weekRows.filter((week) => this.showOld || !week.past)
+    },
+    showEmptySelectionWarning() {
+      return this.visibleWeeks.length > 0 && this.visibleWeeks.every((week) => !week.hasSubjectItems)
+    },
+    // Onderscheidt "dit vakkenpakket heeft niets" van "het filter verbergt alles".
+    filteredOut() {
+      return this.weeks.some(
+        (week) => subjectEventsInWeek(this.allEvents, week, this.year, this.courses).length > 0,
+      )
     },
   },
   methods: {
@@ -238,11 +226,29 @@ export default {
 
 <style scoped>
 .week-list {
-  max-width: 960px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.selection-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.selection-warning .mdi {
+  font-size: 17px;
+  line-height: 1.2;
+  flex-shrink: 0;
 }
 
 .top-controls {
@@ -345,7 +351,7 @@ export default {
 
 .week-body {
   display: grid;
-  grid-template-columns: minmax(240px, 0.95fr) 1.15fr;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   background: var(--surface);
   border: 1px solid var(--border);
   border-top: none;
@@ -353,8 +359,18 @@ export default {
   overflow: hidden;
 }
 
-.day-col {
+.subject-col {
   border-right: 1px solid var(--border);
+}
+
+.days-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.days-col .day-rows {
+  flex: 1;
 }
 
 .col-head {
@@ -366,64 +382,6 @@ export default {
   color: var(--muted);
   background: var(--surface-2);
   border-bottom: 1px solid var(--border);
-}
-
-.day-rows {
-  display: flex;
-  flex-direction: column;
-}
-
-.day-empty {
-  padding: 16px 14px;
-  font-size: 12.5px;
-  color: var(--faint);
-}
-
-.day-row {
-  display: flex;
-  gap: 12px;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--border);
-  align-items: flex-start;
-}
-
-.day-row:last-child {
-  border-bottom: none;
-}
-
-.day-row.today {
-  background: var(--accent-soft);
-}
-
-.day-label {
-  font-size: 12px;
-  color: var(--muted);
-  min-width: 44px;
-  flex-shrink: 0;
-}
-
-.day-label.today {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.day-events {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-  min-width: 0;
-}
-
-.day-event {
-  font-size: 12.5px;
-  color: var(--text);
-  cursor: pointer;
-  line-height: 1.3;
-}
-
-.day-event:hover {
-  color: var(--accent);
 }
 
 .subject-grid {
@@ -445,7 +403,7 @@ export default {
     grid-template-columns: 1fr;
   }
 
-  .day-col {
+  .subject-col {
     border-right: none;
     border-bottom: 1px solid var(--border);
   }

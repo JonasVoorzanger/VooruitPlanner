@@ -18,7 +18,7 @@
         </div>
         <div class="topbar-actions">
           <button class="icon-btn" title="Thema" @click="toggleTheme">{{ themeIcon }}</button>
-          <button class="text-btn" @click="$router.push('/')">Wijzig</button>
+          <button class="text-btn" @click="$router.push('/')">Wijzig vakken</button>
         </div>
       </header>
 
@@ -62,18 +62,34 @@
               </span>
             </button>
           </div>
-          <button
-            class="filter-btn"
-            :class="{ active: testsOnly }"
-            :aria-pressed="testsOnly ? 'true' : 'false'"
-            title="Toon alleen proefwerken, SE's, SO's, presentaties en luistertoetsen"
-            @click="testsOnly = !testsOnly"
-          >
-            <span class="segment-content">
-              <span class="mdi mdi-clipboard-text-clock-outline" aria-hidden="true"></span>
-              <span>Alleen toetsen</span>
-            </span>
-          </button>
+          <div ref="filterWrap" class="filter-wrap">
+            <button
+              class="filter-btn"
+              :class="{ active: isFiltered }"
+              :aria-expanded="filterOpen ? 'true' : 'false'"
+              title="Kies welke soorten items je ziet"
+              @click="filterOpen = !filterOpen"
+            >
+              <span class="segment-content">
+                <span class="mdi mdi-filter-variant" aria-hidden="true"></span>
+                <span>Filter</span>
+                <span v-if="isFiltered" class="filter-count pp-mono">{{ activeFilterCount }}/3</span>
+              </span>
+            </button>
+
+            <div v-if="filterOpen" class="filter-menu">
+              <label v-for="option in filterOptions" :key="option.value" class="filter-option">
+                <input
+                  type="checkbox"
+                  :checked="filters[option.value]"
+                  @change="toggleFilter(option.value)"
+                />
+                <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                <span>{{ option.label }}</span>
+              </label>
+              <div class="filter-hint">Overig zijn de schoolbrede activiteiten en vakanties.</div>
+            </div>
+          </div>
           <button class="filter-btn" title="Exporteren naar A4" @click="openExport()">
             <span class="segment-content">
               <span class="mdi mdi-printer-outline" aria-hidden="true"></span>
@@ -143,17 +159,24 @@
                 </button>
               </div>
 
-              <button
-                class="filter-btn"
-                :class="{ active: testsOnly }"
-                :aria-pressed="testsOnly ? 'true' : 'false'"
-                @click="testsOnly = !testsOnly"
-              >
-                <span class="segment-content">
-                  <span class="mdi mdi-clipboard-text-clock-outline" aria-hidden="true"></span>
-                  <span>Alleen toetsen</span>
-                </span>
-              </button>
+              <div class="mobile-filter">
+                <div class="mobile-filter-label">Filter</div>
+                <div class="mobile-filter-options">
+                  <button
+                    v-for="option in filterOptions"
+                    :key="`menu-filter-${option.value}`"
+                    class="filter-btn"
+                    :class="{ active: filters[option.value] }"
+                    :aria-pressed="filters[option.value] ? 'true' : 'false'"
+                    @click="toggleFilter(option.value)"
+                  >
+                    <span class="segment-content">
+                      <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                      <span>{{ option.label }}</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
 
               <button class="filter-btn" @click="openExport(true)">
                 <span class="segment-content">
@@ -170,6 +193,7 @@
         v-if="view === 'list'"
         :weeks="weeks"
         :events="visibleEvents"
+        :all-events="events"
         :subjects-map="subjectsMap"
         :year="year"
         :courses="courses"
@@ -205,7 +229,7 @@
       :today="today"
       :initial-view="view"
       :initial-detail-level="detailLevel"
-      :initial-tests-only="testsOnly"
+      :initial-filters="filters"
       @close="exportOpen = false"
       @export="runExport"
     />
@@ -220,7 +244,7 @@
       :courses="courses"
       :view="exportSettings.view"
       :detail-level="exportSettings.detailLevel"
-      :tests-only="exportSettings.testsOnly"
+      :filters="exportSettings.filters"
     />
   </div>
 </template>
@@ -233,7 +257,17 @@ import PrintDocument from '../components/planner/PrintDocument.vue'
 import WeekList from '../components/planner/WeekList.vue'
 import { useTheme } from '../composables/useTheme'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
-import { eventDetail, filterTestsOnly, MONTHS, parseDate, saveSelection } from '../utils/plannerModel'
+import {
+  eventDetail,
+  FILTER_CATEGORIES,
+  filterEventsByCategory,
+  formatNumericDate,
+  loadFilters,
+  MONTHS,
+  parseDate,
+  saveFilters,
+  saveSelection,
+} from '../utils/plannerModel'
 import { printAfterRender } from '../utils/print'
 
 export default {
@@ -262,7 +296,8 @@ export default {
       isNarrowScreen: false,
       view: storedView === 'month' ? 'month' : 'list',
       detailLevel: localStorage.getItem('plannerDetailLevel') === 'compact' ? 'compact' : 'full',
-      testsOnly: localStorage.getItem('plannerTestsOnly') === 'true',
+      filters: loadFilters(),
+      filterOpen: false,
       monthYear: today.getFullYear(),
       monthMonth: today.getMonth(),
       activeDetails: [],
@@ -276,6 +311,7 @@ export default {
         { value: 'compact', label: 'Compact', icon: 'mdi-magnify-minus-outline' },
         { value: 'full', label: 'Uitgebreid', icon: 'mdi-magnify-plus-outline' },
       ],
+      filterOptions: FILTER_CATEGORIES,
     }
   },
   computed: {
@@ -301,13 +337,19 @@ export default {
       return this.spreadsheetStore.events
     },
     visibleEvents() {
-      return this.testsOnly ? filterTestsOnly(this.events) : this.events
+      return filterEventsByCategory(this.events, this.filters)
+    },
+    activeFilterCount() {
+      return this.filterOptions.filter((option) => this.filters[option.value]).length
+    },
+    isFiltered() {
+      return this.activeFilterCount < this.filterOptions.length
     },
     exportEvents() {
       if (!this.exportSettings) {
         return []
       }
-      return this.exportSettings.testsOnly ? filterTestsOnly(this.events) : this.events
+      return filterEventsByCategory(this.events, this.exportSettings.filters)
     },
     subjectsMap() {
       return this.spreadsheetStore.subjects.reduce((map, subject) => {
@@ -366,8 +408,11 @@ export default {
     detailLevel(value) {
       localStorage.setItem('plannerDetailLevel', value)
     },
-    testsOnly(value) {
-      localStorage.setItem('plannerTestsOnly', String(value))
+    filters: {
+      handler(value) {
+        saveFilters(value)
+      },
+      deep: true,
     },
     '$route.params': {
       handler() {
@@ -385,9 +430,11 @@ export default {
   mounted() {
     this.updateScreenMode()
     window.addEventListener('resize', this.updateScreenMode)
+    document.addEventListener('click', this.onDocumentClick)
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.updateScreenMode)
+    document.removeEventListener('click', this.onDocumentClick)
   },
   methods: {
     validateSelection() {
@@ -427,8 +474,21 @@ export default {
     closeMenu() {
       this.menuOpen = false
     },
+    toggleFilter(category) {
+      this.filters = { ...this.filters, [category]: !this.filters[category] }
+    },
+    onDocumentClick(event) {
+      if (!this.filterOpen) {
+        return
+      }
+      const wrap = this.$refs.filterWrap
+      if (wrap && !wrap.contains(event.target)) {
+        this.filterOpen = false
+      }
+    },
     openExport(shouldCloseMenu = false) {
       this.exportOpen = true
+      this.filterOpen = false
       if (shouldCloseMenu) {
         this.closeMenu()
       }
@@ -436,7 +496,25 @@ export default {
     runExport(settings) {
       this.exportOpen = false
       this.exportSettings = settings
-      printAfterRender(this, settings.view === 'month' ? 'landscape' : 'portrait')
+      printAfterRender(
+        this,
+        settings.view === 'month' ? 'landscape' : 'portrait',
+        this.exportDocumentName(settings.weeks),
+      )
+    },
+    // Bepaalt de naam die de browser voorstelt bij "Opslaan als pdf".
+    exportDocumentName(weeks) {
+      const dates = (weeks || [])
+        .flatMap((week) => [parseDate(week.start_date), parseDate(week.end_date)])
+        .filter(Boolean)
+
+      if (!dates.length) {
+        return 'Planner'
+      }
+
+      const start = new Date(Math.min(...dates.map((date) => date.getTime())))
+      const end = new Date(Math.max(...dates.map((date) => date.getTime())))
+      return `Planner ${formatNumericDate(start)}-${formatNumericDate(end)}`
     },
     goToday() {
       this.monthYear = this.anchorDate.getFullYear()
@@ -499,11 +577,12 @@ export default {
   width: 28px;
   height: 28px;
   border-radius: 7px;
-  background: var(--accent);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--on-accent);
+  color: var(--muted);
   font-weight: 700;
   font-size: 14px;
 }
@@ -701,6 +780,95 @@ export default {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
+}
+
+.filter-wrap {
+  position: relative;
+}
+
+.filter-count {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.filter-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 200px;
+  padding: 7px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  animation: pp-pop 0.12s ease both;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.filter-option:hover {
+  background: var(--surface-2);
+}
+
+.filter-option input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.filter-option .mdi {
+  font-size: 17px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.filter-hint {
+  padding: 7px 9px 4px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--faint);
+  border-top: 1px solid var(--border);
+  margin-top: 5px;
+}
+
+.mobile-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-filter-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.mobile-filter-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Passen de drie knoppen niet naast elkaar, dan wikkelen ze naar een tweede rij. */
+.mobile-filter-options .filter-btn {
+  flex: 1 1 96px;
+  padding: 0 9px;
 }
 
 .mobile-segments .filter-btn {

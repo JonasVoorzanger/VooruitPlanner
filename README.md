@@ -8,7 +8,7 @@ Vue 3 + Vuetify web application for planning school periods from a public Google
 - Profile shortcuts (C&M, E&M, N&G, N&T) that fill the vakkenpakket in one click
 - Week list view with collapsible weeks: school-wide events per day next to subject activities per vak
 - Month view with a "Deze week" summary column, weekday grid and compact weekend column
-- Compact/Uitgebreid detail levels, an "Alleen toetsen" filter and a light/dark theme toggle
+- Compact/Uitgebreid detail levels, a Filter menu (Toetsen / Planning / Overig) and a light/dark theme toggle
 - A4 export of the list or month view, with per-week selection
 - Event detail dialog with type, weging and Markdown description
 - Google Sheets CSV loading for weeks, events (school-wide, tests, planning activities) and subjects
@@ -17,32 +17,27 @@ Vue 3 + Vuetify web application for planning school periods from a public Google
 
 ## Profiles
 
-The quick-select buttons under *Profiel* on the onboarding screen are defined in
-[`src/data/profiles.js`](src/data/profiles.js). Each profile lists its vakken per
-leerjaar, on top of the shared `COMMON_COURSES`:
+The quick-select buttons under *Profiel* on the onboarding screen are filled from
+the spreadsheet, not from code. The `subjects` tab has one checkbox column per
+profile and leerjaar:
 
-```js
-{
-  id: 'nt',
-  label: 'N&T',
-  name: 'Natuur & Techniek',
-  courses: {
-    4: ['NA', 'SK', 'WB', 'BIO'],
-    5: ['NA', 'SK', 'WB', 'WD', 'NLT'],
-  },
-}
-```
+| abbreviation | full_name | 4_CM | 5_CM | 4_EM | 5_EM | 4_NG | 5_NG | 4_NT | 5_NT |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| AK | Aardrijkskunde | TRUE | TRUE | TRUE | TRUE | FALSE | FALSE | FALSE | FALSE |
 
-Use the abbreviations from the `subjects` tab. Abbreviations that do not exist in
-the spreadsheet are skipped silently. The lists shipped in that file are
-placeholders — replace them with the school's actual vakkenpakketten.
+Tick a box and the vak joins that profile's quick-select; run `npm run load-data`
+to pull the change into [`src/data/spreadsheet.json`](src/data/spreadsheet.json).
+[`src/data/profiles.js`](src/data/profiles.js) only holds the four profile labels
+and reads the columns — no vakkenlijsten live in code.
 
 ## Export to A4
 
 The *Exporteren* button in the planner opens a dialog where a student picks the
-view (list or month), the detail level, whether to limit the export to toetsen,
-and exactly which weeks to include. The export then opens the browser print
-dialog; choosing *Save as PDF* there produces a file.
+view (list or month), the detail level, which item types to include (Toetsen,
+Planning, Overig), and exactly which weeks to include. The export then opens the
+browser print dialog; choosing *Save as PDF* there produces a file named
+`Planner [start]-[end]` after the selected week range, e.g.
+`Planner 24/08/26-16/10/26`.
 
 The list view prints on A4 portrait and the month view on A4 landscape — the page
 size is written into a `@page` rule right before printing (see
@@ -102,8 +97,8 @@ All items — school-wide events, holidays, subject activities, and tests — li
 | ------------ | ----------- |
 | `school-wide` | Announcements, holidays, studiedagen, etc. |
 
-School-wide items are never hidden by the "Alleen toetsen" filter: vakanties and
-proefwerkweken are the context you read your toetsen in.
+School-wide items are the *Overig* category in the Filter menu, so they can be
+shown or hidden independently of Toetsen and Planning.
 
 **Subject types** (appear inside the subject section, matched to weeks via `cal_year` + `cal_week_number`):
 
@@ -138,6 +133,7 @@ proefwerkweken are the context you read your toetsen in.
 | ------ | ----------- |
 | `abbreviation` | Short abbreviation, e.g. `NL` (stored uppercased) |
 | `full_name` | Full subject name, e.g. `Nederlands` |
+| `4_CM` … `5_NT` | Checkbox per profile and leerjaar — `TRUE` puts the vak in that profile's quick-select |
 
 ## Development
 

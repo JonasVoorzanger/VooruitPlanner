@@ -80,6 +80,13 @@ export function formatYearShort(date) {
   return String(date.getFullYear()).slice(-2)
 }
 
+// dd/mm/yy — gebruikt in de bestandsnaam van de pdf-export.
+export function formatNumericDate(date) {
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  return `${day}/${month}/${formatYearShort(date)}`
+}
+
 export function schoolWideEvents(events) {
   return events.filter((event) => normalizeType(event.type) === 'school-wide')
 }
@@ -88,11 +95,71 @@ export function isTestEvent(event) {
   return typeMeta(event.type).test
 }
 
-// Houdt alleen toetsen over (proefwerk, SE, SO, presentatie, luistertoets).
-// Schoolbrede items blijven staan: vakanties en proefwerkweken zijn juist de
-// context waarin je naar je toetsen kijkt.
-export function filterTestsOnly(events) {
-  return events.filter((event) => normalizeType(event.type) === 'school-wide' || isTestEvent(event))
+// ── Filter op soort item ────────────────────────────────────────────────────
+// Elk item valt in precies één categorie, die je los aan en uit kunt zetten:
+// toetsen (proefwerk, SE, SO, presentatie, luistertoets), planning (de rest van
+// de vakitems) en overig (de schoolbrede activiteiten en vakanties).
+export const FILTER_CATEGORIES = [
+  { value: 'toetsen', label: 'Toetsen', icon: 'mdi-clipboard-text-clock-outline' },
+  { value: 'planning', label: 'Planning', icon: 'mdi-calendar-text-outline' },
+  { value: 'overig', label: 'Overig', icon: 'mdi-school-outline' },
+]
+
+export const DEFAULT_FILTERS = { toetsen: true, planning: true, overig: true }
+
+export function eventCategory(event) {
+  if (normalizeType(event.type) === 'school-wide') {
+    return 'overig'
+  }
+  return isTestEvent(event) ? 'toetsen' : 'planning'
+}
+
+export function normalizeFilters(value) {
+  const filters = { ...DEFAULT_FILTERS }
+  if (value && typeof value === 'object') {
+    FILTER_CATEGORIES.forEach(({ value: category }) => {
+      if (typeof value[category] === 'boolean') {
+        filters[category] = value[category]
+      }
+    })
+  }
+  return filters
+}
+
+export function filterEventsByCategory(events, filters) {
+  const active = normalizeFilters(filters)
+  return events.filter((event) => active[eventCategory(event)])
+}
+
+// Korte omschrijving van het filter, bijvoorbeeld voor de printkop.
+export function filtersLabel(filters) {
+  const active = normalizeFilters(filters)
+  const on = FILTER_CATEGORIES.filter(({ value }) => active[value])
+  if (on.length === FILTER_CATEGORIES.length) {
+    return ''
+  }
+  if (!on.length) {
+    return 'niets geselecteerd'
+  }
+  return `alleen ${on.map(({ label }) => label.toLowerCase()).join(' + ')}`
+}
+
+const FILTERS_KEY = 'plannerFilters'
+
+export function loadFilters() {
+  try {
+    return normalizeFilters(JSON.parse(localStorage.getItem(FILTERS_KEY)))
+  } catch {
+    return { ...DEFAULT_FILTERS }
+  }
+}
+
+export function saveFilters(filters) {
+  try {
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(normalizeFilters(filters)))
+  } catch {
+    // storage unavailable
+  }
 }
 
 const YEAR_KEYS = ['year_1', 'year_2', 'year_3', 'year_4', 'year_5', 'year_6']
@@ -119,6 +186,33 @@ export function schoolWideOnDate(events, date, year) {
     }
     const end = parseDate(event.end_date) || start
     return date >= start && date <= end && matchesYear(event, year)
+  })
+}
+
+// Eén rij per dag (ma t/m zo) voor de dagkolom, die de lijst- en maandweergave
+// delen. `monthMonth` is alleen in de maandweergave gezet, om dagen buiten de
+// getoonde maand te kunnen dimmen.
+export function buildDayRows(events, weekStart, year, today, monthMonth = null) {
+  if (!weekStart) {
+    return []
+  }
+
+  return WEEKDAYS.map((weekday, index) => {
+    const date = addDays(weekStart, index)
+    return {
+      key: date.getTime(),
+      weekday,
+      num: date.getDate(),
+      isWeekend: index >= 5,
+      isToday: Boolean(today) && sameDay(date, today),
+      inMonth: monthMonth === null ? true : date.getMonth() === monthMonth,
+      chips: schoolWideOnDate(events, date, year).map((event) => ({
+        event,
+        holiday:
+          Boolean(event.end_date) &&
+          !sameDay(parseDate(event.end_date) || date, parseDate(event.date) || date),
+      })),
+    }
   })
 }
 
