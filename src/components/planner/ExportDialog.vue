@@ -24,7 +24,24 @@
           <div class="field-hint">{{ orientationHint }}</div>
         </div>
 
-        <div class="field">
+        <div v-if="view === 'subject'" class="field">
+          <div class="field-label">Vak</div>
+          <div class="option-row">
+            <button
+              v-for="option in courseOptions"
+              :key="option.abbr"
+              class="option course"
+              :class="{ active: course === option.abbr }"
+              :title="option.name"
+              @click="course = option.abbr"
+            >
+              <span class="abbr pp-mono">{{ option.abbr }}</span>
+              <span>{{ option.name }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="field">
           <div class="field-label">Detailniveau</div>
           <div class="option-row">
             <button
@@ -130,6 +147,10 @@ export default {
       type: Array,
       required: true,
     },
+    subjectsMap: {
+      type: Object,
+      default: () => ({}),
+    },
     today: {
       type: Date,
       required: true,
@@ -146,17 +167,23 @@ export default {
       type: Object,
       default: null,
     },
+    initialCourse: {
+      type: String,
+      default: '',
+    },
   },
   emits: ['close', 'export'],
   data() {
     return {
-      view: this.initialView === 'month' ? 'month' : 'list',
+      view: ['month', 'subject'].includes(this.initialView) ? this.initialView : 'list',
       detailLevel: this.initialDetailLevel === 'compact' ? 'compact' : 'full',
       filters: normalizeFilters(this.initialFilters),
+      course: this.courses.includes(this.initialCourse) ? this.initialCourse : this.courses[0] || '',
       selectedKeys: [],
       viewOptions: [
         { value: 'list', label: 'Lijst', icon: 'mdi-view-list' },
         { value: 'month', label: 'Maand', icon: 'mdi-calendar-month-outline' },
+        { value: 'subject', label: 'Per vak', icon: 'mdi-book-open-page-variant-outline' },
       ],
       detailOptions: [
         { value: 'compact', label: 'Compact', icon: 'mdi-magnify-minus-outline' },
@@ -169,18 +196,30 @@ export default {
     exportEvents() {
       return filterEventsByCategory(this.events, this.filters)
     },
+    courseOptions() {
+      return this.courses.map((abbr) => ({ abbr, name: this.subjectsMap[abbr] || abbr }))
+    },
+    // In de vakweergave tellen alleen de items van het gekozen vak mee.
+    effectiveCourses() {
+      return this.view === 'subject' ? [this.course].filter(Boolean) : this.courses
+    },
     orientationHint() {
-      return this.view === 'month'
-        ? 'Maandweergave print op A4 liggend.'
-        : 'Lijstweergave print op A4 staand.'
+      if (this.view === 'month') {
+        return 'Maandweergave print op A4 liggend.'
+      }
+      if (this.view === 'subject') {
+        return 'Vakweergave print op A4 staand, met alle toelichting erbij.'
+      }
+      return 'Lijstweergave print op A4 staand.'
     },
     weekRows() {
       return this.weeks.map((week, index) => {
         const start = parseDate(week.start_date)
         const end = parseDate(week.end_date)
-        const subjectItems = subjectEventsInWeek(this.exportEvents, week, this.year, this.courses)
+        const subjectItems = subjectEventsInWeek(this.exportEvents, week, this.year, this.effectiveCourses)
         const testCount = subjectItems.filter(isTestEvent).length
-        const schoolCount = schoolWideInWeek(this.exportEvents, week, this.year).length
+        const schoolCount =
+          this.view === 'subject' ? 0 : schoolWideInWeek(this.exportEvents, week, this.year).length
 
         const parts = []
         if (testCount) {
@@ -262,6 +301,7 @@ export default {
         view: this.view,
         detailLevel: this.detailLevel,
         filters: { ...this.filters },
+        course: this.course,
         weeks: this.selectedWeeks.map((row) => row.week),
       })
     },
@@ -401,6 +441,18 @@ export default {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
+}
+
+.option.course {
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.option.course .abbr {
+  font-weight: 600;
+  font-size: 11.5px;
 }
 
 .checkbox-row {

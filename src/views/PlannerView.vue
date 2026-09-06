@@ -243,6 +243,8 @@
       :initial-view="view"
       :initial-detail-level="detailLevel"
       :initial-filters="filters"
+      :initial-course="subjectCourse"
+      :subjects-map="subjectsMap"
       @close="exportOpen = false"
       @export="runExport"
     />
@@ -258,6 +260,7 @@
       :view="exportSettings.view"
       :detail-level="exportSettings.detailLevel"
       :filters="exportSettings.filters"
+      :course="exportSettings.course"
     />
   </div>
 </template>

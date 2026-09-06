@@ -6,7 +6,7 @@
         <span>Periodeplanner · Klas {{ year }}</span>
       </div>
       <div class="doc-meta">
-        <span class="pp-mono">{{ courses.join(' · ') }}</span>
+        <span class="pp-mono">{{ metaCourses }}</span>
         <span class="dot">·</span>
         <span>{{ rangeLabel }}</span>
         <span v-if="filterLabel" class="dot">·</span>
@@ -54,6 +54,40 @@
         </div>
       </section>
       <p v-if="!listWeeks.length" class="empty">Geen weken geselecteerd.</p>
+    </template>
+
+    <template v-else-if="view === 'subject'">
+      <template v-for="week in subjectWeeks" :key="week.key">
+        <section v-if="week.items.length" class="subject-week">
+          <div class="week-head">
+            <span class="week-label">{{ week.label }}</span>
+            <span class="week-range pp-mono">{{ week.range }}</span>
+            <span class="week-summary pp-mono">{{ week.summary }}</span>
+          </div>
+          <div class="subject-items">
+            <div
+              v-for="(item, index) in week.items"
+              :key="index"
+              class="subject-item"
+              :class="{ test: item.isTest }"
+            >
+              <div class="item-line">
+                <span class="type-badge pp-mono" :class="{ test: item.isTest }">{{ item.typeLabel }}</span>
+                <span class="item-title">{{ item.title }}</span>
+                <span v-if="item.weightLabel" class="weight pp-mono">{{ item.weightLabel }}</span>
+              </div>
+              <MarkdownContent v-if="item.description" class="item-desc" :content="item.description" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Lege week: alleen een streepje, net als op het scherm. -->
+        <div v-else class="subject-divider">
+          <span class="divider-label pp-mono">{{ week.label }} · {{ week.range }}</span>
+          <span class="divider-rule" aria-hidden="true"></span>
+        </div>
+      </template>
+      <p v-if="!subjectWeeks.length" class="empty">Geen weken geselecteerd.</p>
     </template>
 
     <template v-else>
@@ -124,6 +158,7 @@
 
 <script>
 import EventCard from './EventCard.vue'
+import MarkdownContent from '../MarkdownContent.vue'
 import {
   addDays,
   buildWeekGroups,
@@ -136,13 +171,16 @@ import {
   schoolWideInWeek,
   schoolWideOnDate,
   subjectEventsInWeek,
+  typeMeta,
   WEEKDAYS,
+  weightLabel,
 } from '../../utils/plannerModel'
 
 export default {
   name: 'PrintDocument',
   components: {
     EventCard,
+    MarkdownContent,
   },
   props: {
     // Alleen de weken die de leerling in het exportvenster heeft aangevinkt.
@@ -178,10 +216,62 @@ export default {
       type: Object,
       default: null,
     },
+    // Het gekozen vak, alleen gebruikt in de vakweergave.
+    course: {
+      type: String,
+      default: '',
+    },
   },
   computed: {
     filterLabel() {
       return filtersLabel(this.filters)
+    },
+    metaCourses() {
+      if (this.view === 'subject') {
+        const name = this.subjectsMap[this.course] || ''
+        return name ? `${this.course} · ${name}` : this.course
+      }
+      return this.courses.join(' · ')
+    },
+    // Elke gekozen week, met de items van één vak. Weken zonder items blijven
+    // staan als streepje, zodat de leerling ziet dat de week bestaat.
+    subjectWeeks() {
+      if (!this.course) {
+        return []
+      }
+
+      return this.weeks.map((week) => {
+        const start = parseDate(week.start_date)
+        const end = parseDate(week.end_date)
+
+        const items = subjectEventsInWeek(this.events, week, this.year, [this.course])
+          .map((event) => {
+            const meta = typeMeta(event.type)
+            return {
+              typeLabel: meta.label,
+              isTest: meta.test,
+              title: event.label || meta.label,
+              weightLabel: meta.test ? weightLabel(event.weight) : '',
+              description: event.description || '',
+            }
+          })
+          .sort((a, b) => (a.isTest ? 0 : 1) - (b.isTest ? 0 : 1))
+
+        const testCount = items.filter((item) => item.isTest).length
+
+        return {
+          key: `${week.start_date}-${week.week_number}`,
+          label: week.label || `Week ${week.week_number}`,
+          range:
+            start && end
+              ? `${start.getDate()} – ${formatShort(end)} '${formatYearShort(end)} (wk ${week.week_number})`
+              : '',
+          items,
+          summary: testCount
+            ? `${items.length} ${items.length === 1 ? 'item' : 'items'} · ${testCount} ${testCount === 1 ? 'toets' : 'toetsen'}`
+            : `${items.length} ${items.length === 1 ? 'item' : 'items'}`,
+        }
+      })
     },
     cardMode() {
       if (this.view === 'month') {
@@ -467,6 +557,84 @@ export default {
   margin-left: auto;
   font-size: 7.5pt;
   color: var(--faint);
+}
+
+/* ── Vakweergave ─────────────────────────────────────────────────────────── */
+.subject-week {
+  border: 1px solid var(--border);
+  border-radius: 2mm;
+  margin-bottom: 2.5mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.subject-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5mm;
+  padding: 2mm 3mm 2.5mm;
+}
+
+.subject-item {
+  border: 1px solid var(--border);
+  border-radius: 1.6mm;
+  padding: 1.4mm 2.4mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.subject-item.test {
+  border-left: 0.9mm solid var(--accent);
+}
+
+.subject-item .item-line {
+  display: flex;
+  align-items: baseline;
+  gap: 2mm;
+  flex-wrap: wrap;
+}
+
+/* Planning is de standaard en blijft grijs; toetsen krijgen de accentkleur. */
+.subject-item .type-badge {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.subject-item .type-badge.test {
+  color: var(--accent);
+}
+
+.subject-item .item-title {
+  font-weight: 600;
+}
+
+.subject-item .item-desc {
+  color: var(--muted);
+  margin-top: 0.6mm;
+}
+
+.subject-divider {
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+  padding: 0 1mm;
+  margin-bottom: 2.5mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.subject-divider .divider-label {
+  font-size: 7pt;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.subject-divider .divider-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
 }
 
 .week-body {

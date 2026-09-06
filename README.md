@@ -34,8 +34,9 @@ and reads the columns — no vakkenlijsten live in code.
 ## Export to A4
 
 The *Exporteren* button in the planner opens a dialog where a student picks the
-view (list or month), the detail level, which item types to include (Toetsen,
-Planning, Overig), and exactly which weeks to include. The export then opens the
+view (list, month or per vak), the detail level (or, for per vak, which subject),
+which item types to include (Toetsen, Planning, Overig), and exactly which weeks
+to include. The export then opens the
 browser print dialog; choosing *Save as PDF* there produces a file named
 `Planner [start]-[end]` after the selected week range, e.g.
 `Planner 24/08/26-16/10/26`.
