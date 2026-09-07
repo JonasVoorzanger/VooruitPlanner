@@ -10,7 +10,10 @@
 
       <header class="topbar">
         <div class="brand">
-          <div class="logo pp-mono">P</div>
+          <button class="back-btn" @click="$router.push('/')">
+            <span class="mdi mdi-arrow-left" aria-hidden="true"></span>
+            <span>Wijzig vakken</span>
+          </button>
           <div>
             <div class="context-title">{{ contextTitle }}</div>
             <div class="context-sub">{{ contextSub }}</div>
@@ -18,7 +21,6 @@
         </div>
         <div class="topbar-actions">
           <button class="icon-btn" title="Thema" @click="toggleTheme">{{ themeIcon }}</button>
-          <button class="text-btn" @click="$router.push('/')">Wijzig vakken</button>
         </div>
       </header>
 
@@ -209,46 +211,83 @@
         </div>
       </div>
 
-      <SubjectView
-        v-if="view === 'subject'"
-        :weeks="weeks"
-        :events="visibleEvents"
-        :subjects-map="subjectsMap"
-        :year="year"
-        :courses="courses"
-        :course="subjectCourse"
-        :today="today"
-        @update:course="setSubjectCourse"
-        @open="openEvent"
-      />
+      <div class="view-area">
+        <SubjectView
+          v-if="view === 'subject'"
+          :weeks="weeks"
+          :events="visibleEvents"
+          :subjects-map="subjectsMap"
+          :year="year"
+          :courses="courses"
+          :course="subjectCourse"
+          :today="today"
+          @update:course="setSubjectCourse"
+          @open="openEvent"
+        />
 
-      <WeekList
-        v-else-if="view === 'list'"
-        :weeks="weeks"
-        :events="visibleEvents"
-        :all-events="events"
-        :subjects-map="subjectsMap"
-        :year="year"
-        :courses="courses"
-        :detail-level="detailLevel"
-        :today="today"
-        :today-index="todayIndex"
-        @open="openEvent"
-      />
+        <WeekList
+          v-else-if="view === 'list'"
+          :weeks="weeks"
+          :events="visibleEvents"
+          :all-events="events"
+          :subjects-map="subjectsMap"
+          :year="year"
+          :courses="courses"
+          :detail-level="detailLevel"
+          :today="today"
+          :today-index="todayIndex"
+          @open="openEvent"
+        />
 
-      <MonthGrid
-        v-else-if="view === 'month'"
-        :weeks="weeks"
-        :events="visibleEvents"
-        :subjects-map="subjectsMap"
-        :year="year"
-        :courses="courses"
-        :detail-level="detailLevel"
-        :today="today"
-        :month-year="monthYear"
-        :month-month="monthMonth"
-        @open="openEvent"
-      />
+        <MonthGrid
+          v-else-if="view === 'month'"
+          :weeks="weeks"
+          :events="visibleEvents"
+          :subjects-map="subjectsMap"
+          :year="year"
+          :courses="courses"
+          :detail-level="detailLevel"
+          :today="today"
+          :month-year="monthYear"
+          :month-month="monthMonth"
+          @open="openEvent"
+        />
+      </div>
+
+      <!-- <footer class="footer">
+        <div class="footer-row">
+          <div class="footer-brand">PeriodePlanner</div>
+          <button class="footer-link" :title="linkCopied ? 'Gekopieerd' : 'Kopieer je link'" @click="copyLink">
+            <span class="footer-link-label pp-mono">jouw link</span>
+            <span class="footer-link-url pp-mono">{{ shareUrl }}</span>
+            <span class="mdi" :class="linkCopied ? 'mdi-check' : 'mdi-content-copy'" aria-hidden="true"></span>
+          </button>
+        </div>
+      </footer> -->
+    </div>
+
+    <!-- Sluitteken onderaan de pagina, buiten de inhoudskolom zodat de lijnen
+         de randen van het scherm halen. -->
+    <div class="footer-mark" aria-hidden="true">
+      <span class="mark-rule"></span>
+      <!-- Het viewBox is bijgesneden tot de pootjes (x 42 en 1128, plus een halve
+           lijndikte), zodat de lijnen er links en rechts strak tegenaan sluiten.
+           De verticalen steken bewust door de horizontalen heen en eindigen in
+           het niets, met ronde uiteinden. -->
+      <svg class="mark-crest" viewBox="35 0 1100 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M42 303V93h138v119" />
+          <path d="M180 145h170" />
+          <path d="M350 212V15h90v115" />
+          <path d="M440 52h290" />
+          <path d="M730 130V15h90v197" />
+          <path d="M820 145h170" />
+          <path d="M990 212V93h138v210" />
+          <path d="M471.5 303v-58a50 50 0 0 1 100 0v58" />
+          <path d="M598.5 303v-58a50 50 0 0 1 100 0v58" />
+        </g>
+      </svg>
+      <span class="mark-rule"></span>
     </div>
 
     <EventModal v-if="activeDetails.length" :details="activeDetails" @close="activeDetails = []" />
@@ -334,10 +373,11 @@ export default {
       isNarrowScreen: false,
       view: ['month', 'subject'].includes(storedView) ? storedView : 'list',
       subjectCourse: localStorage.getItem('plannerSubjectCourse') || '',
-      detailLevel: localStorage.getItem('plannerDetailLevel') === 'compact' ? 'compact' : 'full',
+      detailLevel: localStorage.getItem('plannerDetailLevel') === 'full' ? 'full' : 'compact',
       filters: loadFilters(),
       filterOpen: false,
       shareState: '',
+      linkCopied: false,
       monthYear: today.getFullYear(),
       monthMonth: today.getMonth(),
       activeDetails: [],
@@ -455,6 +495,10 @@ export default {
       }
       return 'mdi-share-variant-outline'
     },
+    // De eigen link van deze leerling, zoals hij ook te delen is.
+    shareUrl() {
+      return `${window.location.host}/#/jaar/${this.year}/${this.courses.join('.')}`
+    },
     shareTitle() {
       return 'Deel je eigen planner-link — of zet de planner op je beginscherm'
     },
@@ -501,6 +545,7 @@ export default {
     window.removeEventListener('resize', this.updateScreenMode)
     document.removeEventListener('click', this.onDocumentClick)
     window.clearTimeout(this.shareTimer)
+    window.clearTimeout(this.copyTimer)
   },
   methods: {
     validateSelection() {
@@ -578,6 +623,18 @@ export default {
         this.flashShareState('copied')
       } catch {
         this.flashShareState('failed')
+      }
+    },
+    async copyLink() {
+      try {
+        await navigator.clipboard.writeText(window.location.href)
+        this.linkCopied = true
+        window.clearTimeout(this.copyTimer)
+        this.copyTimer = window.setTimeout(() => {
+          this.linkCopied = false
+        }, 2200)
+      } catch {
+        // Klembord niet beschikbaar; de link staat al leesbaar in beeld.
       }
     },
     flashShareState(state) {
@@ -665,7 +722,7 @@ export default {
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 20px 64px;
+  padding: 0 20px 0;
 }
 
 .mobile-topbar {
@@ -683,21 +740,35 @@ export default {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  min-width: 0;
 }
 
-.logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  display: flex;
+.back-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 14px;
+  gap: 7px;
+  height: 34px;
+  padding: 0 13px 0 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.back-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.back-btn .mdi {
+  font-size: 17px;
+  line-height: 1;
 }
 
 .context-title {
@@ -760,8 +831,119 @@ export default {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 10px 0 18px;
+  padding: 10px 0 12px;
   border-top: 1px solid var(--border);
+}
+
+.view-area {
+  padding-top: 18px;
+}
+
+.footer {
+  margin-top: 44px;
+}
+
+.footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 18px;
+}
+
+.footer-brand {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.footer-link:hover {
+  border-color: var(--accent-border);
+  color: var(--text);
+}
+
+.footer-link-label {
+  color: var(--faint);
+  flex-shrink: 0;
+}
+
+.footer-link-url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footer-link .mdi {
+  font-size: 15px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Het sluitteken: een doorlopende lijn met het silhouet in het midden. Staat
+   buiten .container, zodat de lijnen tot de schermranden lopen. */
+.footer-mark {
+  display: flex;
+  align-items: flex-end;
+  color: var(--accent);
+  padding-bottom: 28px;
+}
+
+/* 280px breed schaalt de lijndikte van 14 naar ~3,6px; de aanlopers zijn even
+   dik en eindigen op dezelfde hoogte als de pootjes. */
+.mark-rule {
+  flex: 1;
+  height: 3.6px;
+  background: currentColor;
+}
+
+.mark-crest {
+  width: 280px;
+  height: 78.9px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 760px) {
+  .footer {
+    margin-top: 32px;
+  }
+
+  .mark-rule {
+    height: 2.8px;
+  }
+
+  .mark-crest {
+    width: 220px;
+    height: 62px;
+  }
+}
+
+/* Blijft tijdens het scrollen bovenaan staan, zodat de knoppen altijd
+   bereikbaar zijn. */
+@media (min-width: 761px) {
+  .controls {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
 }
 
 .month-nav {

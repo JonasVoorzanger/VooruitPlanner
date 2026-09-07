@@ -9,6 +9,7 @@
         <div v-for="(detail, index) in details" :key="index" class="detail-item">
           <div class="badges">
             <span v-if="detail.subjectAbbreviation" class="subject-abbr pp-mono">{{ detail.subjectAbbreviation }}</span>
+            <span v-if="detail.subjectName" class="subject-name">{{ detail.subjectName }}</span>
             <span class="type-badge pp-mono" :class="{ test: detail.isTest }">{{ detail.typeLabel }}</span>
             <span v-if="detail.weightLabel" class="weight pp-mono">{{ detail.weightLabel }}</span>
           </div>
@@ -118,6 +119,11 @@ export default {
   background: var(--accent-soft);
   border-radius: 5px;
   padding: 1px 7px;
+}
+
+.subject-name {
+  font-size: 12.5px;
+  color: var(--muted);
 }
 
 .type-badge {

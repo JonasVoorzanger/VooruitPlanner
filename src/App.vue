@@ -1,6 +1,6 @@
 <template>
   <v-app v-if="isAdminRoute" class="pp-screen-only">
-    <v-app-bar color="primary" density="comfortable">
+    <v-app-bar v-if="showNavigation" color="primary" density="comfortable">
       <v-app-bar-title>PeriodePlanner</v-app-bar-title>
       <template #append>
         <v-btn
@@ -39,7 +39,11 @@ export default {
   },
   computed: {
     isAdminRoute() {
-      return ['upload', 'settings', 'bulkExport'].includes(this.$route.name)
+      return ['upload', 'settings', 'bulkExport', 'subjectEdit'].includes(this.$route.name)
+    },
+    // De bewerkpagina is een werkscherm; die houdt de balk uit beeld.
+    showNavigation() {
+      return this.$route.name !== 'subjectEdit'
     },
   },
 }

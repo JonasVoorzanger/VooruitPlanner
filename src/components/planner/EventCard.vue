@@ -1,7 +1,9 @@
 <template>
   <div class="event-card" :class="{ dense: isDense }" @click="openGroup">
     <div class="card-head">
-      <span class="abbr pp-mono" :title="subjectName">{{ group.abbr }}</span>
+      <span class="abbr" :class="modeFlags.fullName ? 'is-full' : 'pp-mono'" :title="subjectName">
+        {{ headLabel }}
+      </span>
     </div>
     <div class="items">
       <div v-if="planItems.length" class="item-section plan-section">
@@ -44,10 +46,11 @@ import MarkdownContent from '../MarkdownContent.vue'
 import { typeMeta, weightLabel } from '../../utils/plannerModel'
 
 const MODE_FLAGS = {
-  listFull: { title: true, weight: true, desc: true, dense: false, testsOnly: false },
-  listCompact: { title: true, weight: false, desc: false, dense: false, testsOnly: false },
-  monthFull: { title: true, weight: true, desc: false, dense: true, testsOnly: false },
-  monthCompact: { title: false, weight: false, desc: false, dense: true, testsOnly: true },
+  // fullName: in de uitgebreide lijstweergave is er ruimte voor de hele vaknaam.
+  listFull: { title: true, weight: true, desc: true, dense: false, testsOnly: false, fullName: true },
+  listCompact: { title: true, weight: false, desc: false, dense: false, testsOnly: false, fullName: false },
+  monthFull: { title: true, weight: true, desc: false, dense: true, testsOnly: false, fullName: false },
+  monthCompact: { title: false, weight: false, desc: false, dense: true, testsOnly: true, fullName: false },
 }
 
 export default {
@@ -83,6 +86,9 @@ export default {
     },
     subjectName() {
       return this.subjectsMap[this.group.abbr] || ''
+    },
+    headLabel() {
+      return this.modeFlags.fullName ? this.subjectName || this.group.abbr : this.group.abbr
     },
     visibleItems() {
       const events = this.modeFlags.testsOnly
@@ -162,6 +168,12 @@ export default {
   border-radius: 5px;
   padding: 1px 6px;
   cursor: help;
+}
+
+.abbr.is-full {
+  font-size: 12px;
+  padding: 2px 8px;
+  text-wrap: pretty;
 }
 
 .items {

@@ -6,89 +6,92 @@
         <div class="brand-name">PeriodePlanner</div>
       </div>
 
-      <h1 class="heading">Stel je weergave in</h1>
-      <p class="intro">
-        Kies je leerjaar en de vakken die je wilt zien. Daarna opent de planner meteen op jouw eigen link —
-        leerling, mentor of docent.
-      </p>
+      <!-- Stap voor stap: de volgende stap verschijnt pas als de vorige klaar is. -->
+      <section class="step">
+        <h2 class="step-head"><span class="step-number">1</span> Kies je leerjaar</h2>
+        <div class="chip-row years">
+          <button
+            v-for="option in [4, 5]"
+            :key="option"
+            class="year-chip"
+            :class="{ active: year === option }"
+            @click="selectYear(option)"
+          >
+            {{ option }}
+          </button>
+        </div>
+      </section>
 
-      <div class="section-label">Leerjaar</div>
-      <div class="chip-row years">
-        <button
-          v-for="option in [4, 5]"
-          :key="option"
-          class="year-chip"
-          :class="{ active: year === option }"
-          @click="year = option"
-        >
-          {{ option }}
+      <section v-if="year" class="step">
+        <h2 class="step-head"><span class="step-number">2</span> Kies je profiel</h2>
+        <div class="chip-row profiles">
+          <button
+            v-for="profile in profiles"
+            :key="profile.id"
+            class="profile-chip"
+            :class="{ active: activeProfileId === profile.id }"
+            :title="profile.name"
+            @click="applyProfile(profile)"
+          >
+            {{ profile.label }}
+          </button>
+        </div>
+        <button v-if="!showSubjectStep" class="skip-profile" @click="profileSkipped = true">
+          Ik kies mijn vakken liever zelf
         </button>
-      </div>
+      </section>
 
-      <div class="section-label">Profiel</div>
-      <p v-if="!year" class="profile-hint">Kies eerst een leerjaar om een profiel te gebruiken.</p>
-      <div class="chip-row profiles">
-        <button
-          v-for="profile in profiles"
-          :key="profile.id"
-          class="profile-chip"
-          :class="{ active: activeProfileId === profile.id }"
-          :disabled="!year"
-          :title="profile.name"
-          @click="applyProfile(profile)"
-        >
-          {{ profile.label }}
-        </button>
-      </div>
-
-      <div class="section-head">
-        <div class="section-label">Vakken</div>
-        <div class="section-actions">
+      <section v-if="showSubjectStep" class="step">
+        <h2 class="step-head">
+          <span class="step-number">3</span> Selecteer eventueel je andere (keuze)vakken
+        </h2>
+        <div class="section-head">
+          <div class="count pp-mono">{{ courses.length }} gekozen</div>
           <button class="toggle-all pp-mono" @click="toggleAllCourses">
             {{ allCoursesSelected ? 'Deselecteer alles' : 'Selecteer alles' }}
           </button>
-          <div class="count pp-mono">{{ courses.length }} gekozen</div>
         </div>
-      </div>
-      <p v-if="!year" class="subject-hint">Kies eerst een leerjaar om te zien welke vakken een planner hebben.</p>
-      <div class="chip-row subjects">
-        <button
-          v-for="subject in selectableSubjects"
-          :key="subject.abbreviation"
-          class="course-chip"
-          :class="{ active: courses.includes(subject.abbreviation) }"
-          :title="subject.full_name"
-          @click="toggleCourse(subject.abbreviation)"
-        >
-          <span class="abbr pp-mono">{{ subject.abbreviation }}</span>&nbsp;{{ subject.full_name }}
-        </button>
-      </div>
-
-      <!-- Vakken zonder planner staan uit de weg, maar blijven wel op te vragen. -->
-      <div v-if="unavailableCount" class="unavailable-block">
-        <button class="toggle-unavailable" @click="showUnavailable = !showUnavailable">
-          <span class="chevron">{{ showUnavailable ? '▾' : '▸' }}</span>
-          {{ showUnavailable ? 'Verberg' : 'Toon' }} vakken zonder planner ({{ unavailableCount }})
-        </button>
-
-        <template v-if="showUnavailable">
-          <div class="chip-row unavailable">
-            <span v-for="subject in unavailableSubjects" :key="subject.abbreviation" class="course-chip inactive">
-              <span class="abbr pp-mono">{{ subject.abbreviation }}</span>&nbsp;{{ subject.full_name }}
+        <div class="chip-row subjects">
+          <button
+            v-for="subject in selectableSubjects"
+            :key="subject.abbreviation"
+            class="course-chip"
+            :class="{ active: courses.includes(subject.abbreviation) }"
+            :aria-pressed="courses.includes(subject.abbreviation) ? 'true' : 'false'"
+            :title="subject.full_name"
+            @click="toggleCourse(subject.abbreviation)"
+          >
+            <span class="box" aria-hidden="true">
+              <span v-if="courses.includes(subject.abbreviation)" class="mdi mdi-check"></span>
             </span>
-          </div>
-          <p class="subject-hint">
-            Voor deze vakken is nog geen planner geüpload voor leerjaar {{ year }}, dus je kunt ze nog niet kiezen.
-          </p>
-        </template>
-      </div>
+            <span class="abbr pp-mono">{{ subject.abbreviation }}</span>&nbsp;{{ subject.full_name }}
+          </button>
+        </div>
 
-      <button class="confirm" :disabled="!canConfirm" @click="confirm">Planner openen</button>
+        <!-- Vakken zonder planner staan uit de weg, maar blijven wel op te vragen. -->
+        <div v-if="unavailableCount" class="unavailable-block">
+          <button class="toggle-unavailable" @click="showUnavailable = !showUnavailable">
+            <span class="mdi chevron" :class="showUnavailable ? 'mdi-chevron-down' : 'mdi-chevron-right'"></span>
+            {{ showUnavailable ? 'Verberg' : 'Toon' }} vakken zonder planner ({{ unavailableCount }})
+          </button>
 
-      <div class="share">
-        <span class="share-label pp-mono">jouw link</span>
-        <span class="share-url pp-mono">{{ shareUrl }}</span>
-      </div>
+          <template v-if="showUnavailable">
+            <div class="chip-row unavailable">
+              <span v-for="subject in unavailableSubjects" :key="subject.abbreviation" class="course-chip inactive">
+                <span class="abbr pp-mono">{{ subject.abbreviation }}</span>&nbsp;{{ subject.full_name }}
+              </span>
+            </div>
+            <p class="subject-hint">
+              Voor deze vakken is nog geen planner geüpload voor leerjaar {{ year }}, dus je kunt ze nog niet kiezen.
+            </p>
+          </template>
+        </div>
+      </section>
+
+      <button class="confirm" :disabled="!canConfirm" @click="confirm">
+        <span>Planner openen</span>
+        <span class="mdi mdi-arrow-right" aria-hidden="true"></span>
+      </button>
     </div>
   </div>
 </template>
@@ -108,6 +111,9 @@ export default {
       courses: [...selection.courses],
       profiles: PROFILES,
       showUnavailable: false,
+      // Wie geen profiel gebruikt, kiest zijn vakken zelf; stap 3 komt dan ook
+      // zonder profielkeuze tevoorschijn.
+      profileSkipped: selection.courses.length > 0,
     }
   },
   computed: {
@@ -124,6 +130,9 @@ export default {
     },
     selectableSubjects() {
       return this.subjects.filter((subject) => this.isAvailable(subject.abbreviation))
+    },
+    showSubjectStep() {
+      return Boolean(this.year) && (this.profileSkipped || Boolean(this.activeProfileId) || this.courses.length > 0)
     },
     unavailableSubjects() {
       return this.subjects.filter((subject) => !this.isAvailable(subject.abbreviation))
@@ -156,12 +165,6 @@ export default {
       }
       return `/jaar/${this.year}/${this.courses.join('.')}`
     },
-    shareUrl() {
-      if (!this.plannerPath) {
-        return 'kies leerjaar en vakken'
-      }
-      return `${window.location.host}/#${this.plannerPath}`
-    },
   },
   watch: {
     // Vakken zonder planner voor het nieuwe leerjaar vallen uit de keuze.
@@ -170,6 +173,9 @@ export default {
     },
   },
   methods: {
+    selectYear(year) {
+      this.year = year
+    },
     isAvailable(abbreviation) {
       return !this.availableCourses || this.availableCourses.has(abbreviation)
     },
@@ -257,40 +263,86 @@ export default {
   font-size: 26px;
   font-weight: 600;
   letter-spacing: -0.02em;
-  margin: 0 0 6px;
-}
-
-.intro {
-  color: var(--muted);
-  font-size: 14.5px;
   margin: 0 0 26px;
 }
 
-.section-label {
-  font-size: 12.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  margin-bottom: 10px;
+.step {
+  margin-bottom: 28px;
+  animation: pp-fade 0.25s ease both;
 }
 
-.section-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.section-actions {
+.step-head {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
 }
 
-.section-head .section-label {
-  margin-bottom: 0;
+.step-number {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.skip-profile {
+  margin-top: 12px;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.skip-profile:hover {
+  color: var(--accent);
+}
+
+/* Een vinkvakje maakt zichtbaar dat je vakken aan- en uitzet. */
+.box {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-accent);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.course-chip.active .box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+
 
 .count {
   font-size: 12.5px;
@@ -320,16 +372,8 @@ export default {
   flex-wrap: wrap;
 }
 
-.chip-row.years {
-  margin-bottom: 24px;
-}
-
-.chip-row.profiles {
-  margin-bottom: 24px;
-}
-
 .chip-row.subjects {
-  margin-bottom: 26px;
+  margin-bottom: 16px;
 }
 
 .subject-hint {
@@ -340,8 +384,7 @@ export default {
 }
 
 .unavailable-block {
-  margin-top: -14px;
-  margin-bottom: 26px;
+  margin-bottom: 4px;
 }
 
 .toggle-unavailable {
@@ -365,7 +408,8 @@ export default {
 }
 
 .toggle-unavailable .chevron {
-  font-size: 11px;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .chip-row.unavailable {
@@ -384,11 +428,6 @@ export default {
   color: var(--faint);
 }
 
-.profile-hint {
-  font-size: 12.5px;
-  color: var(--faint);
-  margin: -4px 0 10px;
-}
 
 .profile-chip {
   height: 40px;
@@ -403,7 +442,7 @@ export default {
   font-weight: 600;
 }
 
-.profile-chip:hover:not(:disabled) {
+.profile-chip:hover {
   border-color: var(--accent-border);
 }
 
@@ -413,10 +452,6 @@ export default {
   color: var(--accent);
 }
 
-.profile-chip:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 
 .year-chip {
   min-width: 44px;
@@ -441,6 +476,7 @@ export default {
 .course-chip {
   display: inline-flex;
   align-items: center;
+  text-align: left;
   padding: 8px 13px;
   border-radius: 9px;
   border: 1px solid var(--border);
@@ -476,6 +512,30 @@ export default {
   font-family: inherit;
   font-size: 15px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.confirm .mdi {
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.confirm:not(:disabled):hover .mdi {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm .mdi {
+    transition: none;
+  }
+
+  .confirm:not(:disabled):hover .mdi {
+    transform: none;
+  }
 }
 
 .confirm:disabled {
@@ -484,29 +544,4 @@ export default {
   cursor: not-allowed;
 }
 
-.share {
-  margin-top: 16px;
-  font-size: 12.5px;
-  color: var(--faint);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.share-label {
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
-.share-url {
-  color: var(--muted);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 3px 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 </style>

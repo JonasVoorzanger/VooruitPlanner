@@ -2,7 +2,7 @@
   <div class="week-list">
     <div class="top-controls">
       <button v-if="hasPast" class="old-toggle" @click="showOld = !showOld">
-        <span class="chevron">{{ showOld ? '▾' : '▸' }}</span>
+        <span class="mdi chevron" :class="showOld ? 'mdi-chevron-down' : 'mdi-chevron-right'" aria-hidden="true"></span>
         {{ showOld ? 'Verberg oude weken' : 'Toon oude weken' }}
       </button>
       <button class="old-toggle" @click="toggleAllVisibleWeeks">
@@ -19,18 +19,28 @@
     </p>
 
     <div v-for="week in visibleWeeks" :key="`${week.start_date}-${week.week_number}`" class="week">
-      <button class="week-head" :class="{ open: week.isOpen }" @click="toggle(week.index)">
-        <span class="chevron">{{ week.isOpen ? '▾' : '▸' }}</span>
+      <button
+        class="week-head"
+        :class="{ open: week.isOpen }"
+        :aria-expanded="week.isOpen ? 'true' : 'false'"
+        @click="toggle(week.index)"
+      >
+        <span class="mdi mdi-chevron-right chevron" aria-hidden="true"></span>
         <span class="week-label">{{ week.label }}</span>
-        <span class="week-range pp-mono">{{ week.range }}</span>
+        <span v-if="week.isOpen" class="week-range pp-mono">{{ week.range }}</span>
         <span v-if="week.isCurrent" class="status-badge current">nu</span>
         <span v-else-if="week.past" class="status-badge past">al voorbij</span>
-        <span class="summary pp-mono">{{ week.headerSummary }}</span>
+        <span class="summary pp-mono">
+          <template v-if="!week.allTests">{{ week.summaryItems }}</template>
+          <template v-if="week.summaryTests">
+            <span v-if="!week.allTests" class="summary-sep">·</span>
+            <span class="summary-tests">{{ week.summaryTests }}</span>
+          </template>
+        </span>
       </button>
 
       <div v-if="week.isOpen" class="week-body">
         <div class="subject-col">
-          <div class="col-head">Deze week · per vak</div>
           <div v-if="week.groups.length" class="subject-grid">
             <EventCard
               v-for="group in week.groups"
@@ -45,7 +55,6 @@
           <div v-else class="empty">Geen vakactiviteiten deze week.</div>
         </div>
         <div class="days-col">
-          <div class="col-head">Per dag · op datum</div>
           <DayRows :days="week.days" @open="openSchoolWide" />
         </div>
       </div>
@@ -62,7 +71,6 @@ import {
   formatWeekRange,
   isWeekendDay,
   parseDate,
-  schoolWideInWeek,
   schoolWideWhenLabel,
   subjectEventsInWeek,
   typeMeta,
@@ -118,7 +126,7 @@ export default {
     // je net gehad hebt.
     const focusIndex = isWeekendDay(this.today) ? this.todayIndex + 1 : this.todayIndex
     return {
-      openWeeks: [focusIndex, focusIndex + 1],
+      openWeeks: [focusIndex],
       showOld: false,
     }
   },
@@ -151,28 +159,8 @@ export default {
 
         const subjectItems = subjectEventsInWeek(this.events, week, this.year, this.courses)
         const testCount = subjectItems.filter((event) => typeMeta(event.type).test).length
-        const schoolCount = schoolWideInWeek(this.events, week, this.year).length
 
-        const parts = []
-        if (subjectItems.length) {
-          const toetsLabel = `${testCount} ${testCount === 1 ? 'toets' : 'toetsen'}`
-          const itemLabel = `${subjectItems.length} ${subjectItems.length === 1 ? 'item' : 'items'}`
-          const allItemsAreTests = testCount > 0 && testCount === subjectItems.length
-          parts.push(allItemsAreTests ? toetsLabel : testCount ? `${itemLabel} (incl. ${toetsLabel})` : itemLabel)
-        }
-
-        const headerParts = []
-        if (subjectItems.length) {
-          const toetsLabel = `${testCount} ${testCount === 1 ? 'toets' : 'toetsen'}`
-          const itemLabel = `${subjectItems.length} ${subjectItems.length === 1 ? 'item' : 'items'}`
-          const allItemsAreTests = testCount > 0 && testCount === subjectItems.length
-          headerParts.push(allItemsAreTests ? toetsLabel : testCount ? `${itemLabel} (incl. ${toetsLabel})` : itemLabel)
-        }
-
-        if (schoolCount) {
-          parts.push(`${schoolCount} ${schoolCount === 1 ? 'activiteit' : 'activiteiten'}`)
-        }
-
+        const itemCount = subjectItems.length
         return {
           index,
           week_number: week.week_number,
@@ -182,11 +170,12 @@ export default {
           isCurrent: !this.isWeekend && this.today >= start && this.today <= end,
           isOpen: openSet.has(index),
           past: end < this.today,
-          hasSubjectItems: subjectItems.length > 0,
+          hasSubjectItems: itemCount > 0,
           days: buildDayRows(this.events, start, this.year, this.today),
           groups: buildWeekGroups(this.events, week, this.year, this.courses),
-          headerSummary: headerParts.length ? headerParts.join(' · ') : 'geen items',
-          summary: parts.length ? parts.join(' · ') : 'geen items',
+          summaryItems: itemCount ? `${itemCount} ${itemCount === 1 ? 'item' : 'items'}` : 'geen items',
+          summaryTests: testCount ? `${testCount} ${testCount === 1 ? 'toets' : 'toetsen'}` : '',
+          allTests: testCount > 0 && testCount === itemCount,
         }
       })
     },
@@ -286,7 +275,8 @@ export default {
 }
 
 .old-toggle .chevron {
-  font-size: 11px;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .week-head {
@@ -296,7 +286,7 @@ export default {
   width: 100%;
   text-align: left;
   padding: 13px 15px;
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 13px;
   cursor: pointer;
@@ -314,10 +304,22 @@ export default {
 }
 
 .week-head .chevron {
-  color: var(--faint);
-  font-size: 12px;
-  width: 14px;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  width: 20px;
   flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.week-head.open .chevron {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .week-head .chevron {
+    transition: none;
+  }
 }
 
 .week-label {
@@ -353,6 +355,16 @@ export default {
   margin-left: auto;
   font-size: 12px;
   color: var(--faint);
+  white-space: nowrap;
+}
+
+.summary-sep {
+  padding: 0 2px;
+}
+
+.summary-tests {
+  font-weight: 700;
+  color: var(--accent);
 }
 
 .week-body {
@@ -377,17 +389,6 @@ export default {
 
 .days-col .day-rows {
   flex: 1;
-}
-
-.col-head {
-  padding: 9px 14px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--border);
 }
 
 .subject-grid {
@@ -434,7 +435,7 @@ export default {
   /* Naam, badge en aantal op de hoofdregel; de datums eronder. */
   .week-head {
     display: grid;
-    grid-template-columns: 16px auto auto 1fr;
+    grid-template-columns: 20px auto auto 1fr;
     grid-template-areas:
       'chevron label badge summary'
       '.       range range range';

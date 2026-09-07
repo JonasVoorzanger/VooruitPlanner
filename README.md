@@ -15,6 +15,7 @@ Vue 3 + Vuetify web application for planning school periods from a public Google
 - Google Sheets CSV loading for weeks, events (school-wide, tests, planning activities) and subjects
 - Admin upload flow for PDF/DOCX to Claude-powered CSV conversion
 - Admin bulk export (`/#/export`): one PDF per vak, or every vak in one document, named `Planner <VAK> klas <jaar> <start>-<eind>` for sending to teachers to check
+- Admin per-vak editor (`/#/bewerk/<jaar>/<VAK>`): edit and add items week by week and download the result as CSV for the `events` tab — it never writes to the spreadsheet itself
 - Settings stored in localStorage for spreadsheet and Claude API configuration
 - Installable on a phone's home screen (web app manifest + calendar icon), a **Delen** button using the device share sheet, and Open Graph tags for link previews
 

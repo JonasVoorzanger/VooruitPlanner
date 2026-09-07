@@ -68,9 +68,19 @@
                 <td class="text-right">{{ row.testCount }}</td>
                 <td class="text-right">{{ row.weekCount }}</td>
                 <td class="text-right">
-                  <v-btn size="small" variant="tonal" prepend-icon="mdi-printer-outline" @click="exportOne(row)">
-                    Exporteer
-                  </v-btn>
+                  <div class="d-inline-flex ga-2">
+                    <v-btn
+                      size="small"
+                      variant="text"
+                      prepend-icon="mdi-pencil-outline"
+                      :to="`/bewerk/${row.year}/${row.abbr}`"
+                    >
+                      Bewerk
+                    </v-btn>
+                    <v-btn size="small" variant="tonal" prepend-icon="mdi-printer-outline" @click="exportOne(row)">
+                      Exporteer
+                    </v-btn>
+                  </div>
                 </td>
               </tr>
               <tr v-if="!rows.length">
