@@ -10,7 +10,9 @@
           <div class="badges">
             <span v-if="detail.subjectAbbreviation" class="subject-abbr pp-mono">{{ detail.subjectAbbreviation }}</span>
             <span v-if="detail.subjectName" class="subject-name">{{ detail.subjectName }}</span>
-            <span class="type-badge pp-mono" :class="{ test: detail.isTest }">{{ detail.typeLabel }}</span>
+            <span class="type-badge pp-mono" :class="{ test: detail.isTest, exam: detail.isExam }">
+              {{ detail.typeLabel }}
+            </span>
             <span v-if="detail.weightLabel" class="weight pp-mono">{{ detail.weightLabel }}</span>
           </div>
           <div class="title">{{ detail.title }}</div>
@@ -136,6 +138,10 @@ export default {
 
 .type-badge.test {
   color: var(--accent);
+}
+
+.type-badge.exam {
+  color: var(--exam);
 }
 
 .weight {

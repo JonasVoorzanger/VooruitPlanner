@@ -132,7 +132,15 @@ import { useSpreadsheetStore } from '../stores/spreadsheet'
 import { EVENT_COLUMNS, downloadCsv, toCsv } from '../utils/csv'
 import { formatWeekRange, isTestEvent, parseDate, typeMeta } from '../utils/plannerModel'
 
-const TYPE_VALUES = ['plan', 'proefwerk', 'so', 'schoolexamen', 'presentatie', 'luistertoets']
+const TYPE_VALUES = [
+  'plan',
+  'proefwerk',
+  'so',
+  'schoolexamen',
+  'praktische opdracht',
+  'presentatie',
+  'luistertoets',
+]
 
 let nextId = 1
 

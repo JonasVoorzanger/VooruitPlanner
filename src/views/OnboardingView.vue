@@ -1,5 +1,7 @@
 <template>
   <div class="screen">
+    <IntroTour v-if="introOpen" :dismissible="false" @close="introOpen = false" />
+
     <div class="panel">
       <div class="brand">
         <div class="logo pp-mono">P</div>
@@ -97,12 +99,16 @@
 </template>
 
 <script>
+import IntroTour, { introHidden } from '../components/IntroTour.vue'
 import { availableProfileCourses, PROFILES } from '../data/profiles'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
 import { coursesWithItems, loadSelection, saveSelection } from '../utils/plannerModel'
 
 export default {
   name: 'OnboardingView',
+  components: {
+    IntroTour,
+  },
   data() {
     const selection = loadSelection()
     return {
@@ -111,6 +117,7 @@ export default {
       courses: [...selection.courses],
       profiles: PROFILES,
       showUnavailable: false,
+      introOpen: false,
       // Wie geen profiel gebruikt, kiest zijn vakken zelf; stap 3 komt dan ook
       // zonder profielkeuze tevoorschijn.
       profileSkipped: selection.courses.length > 0,
@@ -165,6 +172,17 @@ export default {
       }
       return `/jaar/${this.year}/${this.courses.join('.')}`
     },
+  },
+  // De uitleg hoort alleen bij het openen van de site zelf. Navigeren binnen de
+  // app naar dit scherm — bijvoorbeeld via "Wijzig vakken" — laat hem met rust,
+  // en een directe link naar een planner komt hier sowieso niet langs.
+  beforeRouteEnter(to, from, next) {
+    const isFreshVisit = from.matched.length === 0
+    next((vm) => {
+      if (isFreshVisit && !introHidden()) {
+        vm.introOpen = true
+      }
+    })
   },
   watch: {
     // Vakken zonder planner voor het nieuwe leerjaar vallen uit de keuze.

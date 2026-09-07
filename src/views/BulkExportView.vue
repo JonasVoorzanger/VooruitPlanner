@@ -117,11 +117,12 @@
 import PrintDocument from '../components/planner/PrintDocument.vue'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
 import {
+  availableYears,
   formatNumericDate,
-  isTestEvent,
   parseDate,
   subjectEventsInWeek,
   subjectExportName,
+  subjectYearRows,
 } from '../utils/plannerModel'
 import { printAfterRender } from '../utils/print'
 
@@ -157,43 +158,10 @@ export default {
     },
     // Alle leerjaren die daadwerkelijk in de events voorkomen.
     years() {
-      const found = new Set()
-      this.events.forEach((event) => {
-        const year = Number(event.year)
-        if (Number.isFinite(year) && year > 0) {
-          found.add(year)
-        }
-      })
-      return [...found].sort((a, b) => a - b)
+      return availableYears(this.events)
     },
-    // Eén regel per vak/leerjaar-combinatie waarvoor items bestaan.
     allRows() {
-      const rows = []
-
-      this.years.forEach((year) => {
-        this.spreadsheetStore.subjects.forEach((subject) => {
-          const weeksWithItems = this.weeks
-            .map((week) => subjectEventsInWeek(this.events, week, year, [subject.abbreviation]))
-            .filter((items) => items.length > 0)
-
-          const items = weeksWithItems.flat()
-          if (!items.length) {
-            return
-          }
-
-          rows.push({
-            key: `${year}-${subject.abbreviation}`,
-            abbr: subject.abbreviation,
-            name: subject.full_name,
-            year,
-            itemCount: items.length,
-            testCount: items.filter(isTestEvent).length,
-            weekCount: weeksWithItems.length,
-          })
-        })
-      })
-
-      return rows
+      return subjectYearRows(this.events, this.weeks, this.spreadsheetStore.subjects)
     },
     rows() {
       if (this.yearFilter === 'all') {

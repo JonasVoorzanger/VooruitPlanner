@@ -20,6 +20,9 @@
           </div>
         </div>
         <div class="topbar-actions">
+          <button class="icon-btn" title="Uitleg over de planner" @click="introOpen = true">
+            <span class="mdi mdi-help-circle-outline" aria-hidden="true"></span>
+          </button>
           <button class="icon-btn" title="Thema" @click="toggleTheme">{{ themeIcon }}</button>
         </div>
       </header>
@@ -124,6 +127,9 @@
           <div class="mobile-menu-subjects pp-mono">{{ mobileSubjectLine }}</div>
 
           <div class="mobile-menu-actions">
+            <button class="icon-btn" title="Uitleg over de planner" @click="openIntro()">
+              <span class="mdi mdi-help-circle-outline" aria-hidden="true"></span>
+            </button>
             <button class="icon-btn" title="Thema" @click="toggleTheme">{{ themeIcon }}</button>
             <button class="text-btn" @click="$router.push('/'); closeMenu()">Wijzig</button>
           </div>
@@ -290,6 +296,8 @@
       <span class="mark-rule"></span>
     </div>
 
+    <IntroTour v-if="introOpen" @close="introOpen = false" />
+
     <EventModal v-if="activeDetails.length" :details="activeDetails" @close="activeDetails = []" />
 
     <ExportDialog
@@ -325,6 +333,7 @@
 </template>
 
 <script>
+import IntroTour from '../components/IntroTour.vue'
 import EventModal from '../components/planner/EventModal.vue'
 import ExportDialog from '../components/planner/ExportDialog.vue'
 import MonthGrid from '../components/planner/MonthGrid.vue'
@@ -350,6 +359,7 @@ export default {
   name: 'PlannerView',
   components: {
     EventModal,
+    IntroTour,
     ExportDialog,
     MonthGrid,
     PrintDocument,
@@ -378,6 +388,7 @@ export default {
       filterOpen: false,
       shareState: '',
       linkCopied: false,
+      introOpen: false,
       monthYear: today.getFullYear(),
       monthMonth: today.getMonth(),
       activeDetails: [],
@@ -644,6 +655,10 @@ export default {
         this.shareState = ''
       }, 2200)
     },
+    openIntro() {
+      this.introOpen = true
+      this.closeMenu()
+    },
     toggleFilter(category) {
       this.filters = { ...this.filters, [category]: !this.filters[category] }
     },
@@ -809,6 +824,11 @@ export default {
   color: var(--text);
 }
 
+.icon-btn .mdi {
+  font-size: 19px;
+  line-height: 1;
+}
+
 .text-btn {
   height: 34px;
   padding: 0 12px;
@@ -902,20 +922,21 @@ export default {
   display: flex;
   align-items: flex-end;
   color: var(--accent);
+  margin-top: 40px;
   padding-bottom: 28px;
 }
 
-/* 280px breed schaalt de lijndikte van 14 naar ~3,6px; de aanlopers zijn even
+/* 140px breed schaalt de lijndikte van 14 naar ~1,8px; de aanlopers zijn even
    dik en eindigen op dezelfde hoogte als de pootjes. */
 .mark-rule {
   flex: 1;
-  height: 3.6px;
+  height: 1.8px;
   background: currentColor;
 }
 
 .mark-crest {
-  width: 280px;
-  height: 78.9px;
+  width: 140px;
+  height: 39.5px;
   flex-shrink: 0;
 }
 
@@ -925,12 +946,12 @@ export default {
   }
 
   .mark-rule {
-    height: 2.8px;
+    height: 1.4px;
   }
 
   .mark-crest {
-    width: 220px;
-    height: 62px;
+    width: 110px;
+    height: 31px;
   }
 }
 

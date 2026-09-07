@@ -33,17 +33,19 @@ export default {
         { title: 'Planner', to: '/', icon: 'mdi-calendar-month-outline' },
         { title: 'Upload', to: '/upload', icon: 'mdi-file-upload-outline' },
         { title: 'Bulkexport', to: '/export', icon: 'mdi-file-export-outline' },
+        { title: 'Bewerklijst', to: '/bewerklijst', icon: 'mdi-playlist-edit' },
         { title: 'Settings', to: '/settings', icon: 'mdi-cog-outline' },
       ],
     }
   },
   computed: {
     isAdminRoute() {
-      return ['upload', 'settings', 'bulkExport', 'subjectEdit'].includes(this.$route.name)
+      return ['upload', 'settings', 'bulkExport', 'subjectEdit', 'editIndex'].includes(this.$route.name)
     },
-    // De bewerkpagina is een werkscherm; die houdt de balk uit beeld.
+    // De bewerkschermen zijn werkschermen voor docenten; die houden de
+    // beheerbalk uit beeld.
     showNavigation() {
-      return this.$route.name !== 'subjectEdit'
+      return !['subjectEdit', 'editIndex'].includes(this.$route.name)
     },
   },
 }

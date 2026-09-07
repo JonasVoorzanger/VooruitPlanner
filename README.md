@@ -15,9 +15,25 @@ Vue 3 + Vuetify web application for planning school periods from a public Google
 - Google Sheets CSV loading for weeks, events (school-wide, tests, planning activities) and subjects
 - Admin upload flow for PDF/DOCX to Claude-powered CSV conversion
 - Admin bulk export (`/#/export`): one PDF per vak, or every vak in one document, named `Planner <VAK> klas <jaar> <start>-<eind>` for sending to teachers to check
+- Teacher entry point (`/#/bewerklijst`): search and pick a vak to edit, no admin chrome
 - Admin per-vak editor (`/#/bewerk/<jaar>/<VAK>`): edit and add items week by week and download the result as CSV for the `events` tab — it never writes to the spreadsheet itself
 - Settings stored in localStorage for spreadsheet and Claude API configuration
 - Installable on a phone's home screen (web app manifest + calendar icon), a **Delen** button using the device share sheet, and Open Graph tags for link previews
+
+## Intro tour
+
+First-time visitors to the main page (`/#/`) get a five-step walkthrough. The
+step images are placeholders in [`public/intro/`](public/intro/) — replace
+`stap-1.png` … `stap-5.png` with real screenshots at the same names (960×540, 16:9).
+Text and order live in `STEPS` in
+[`src/components/IntroTour.vue`](src/components/IntroTour.vue).
+
+It only auto-opens on the main page; shared links straight to a planner never
+trigger it. The auto-shown tour has no close button and ignores Escape and
+backdrop clicks — you walk it through and close it on the last step. Reopened
+from the **?** button it is dismissible as usual. The **?** button next to the theme toggle reopens it any time, and
+the last step offers "Deze uitleg niet meer tonen" (stored as
+`plannerIntroHidden`).
 
 ## Profiles
 
@@ -112,7 +128,8 @@ shown or hidden independently of Toetsen and Planning.
 | `plan` | Regular planning activity (e.g. `Herhaling H1-H3`) |
 | `proefwerk` | Proefwerk |
 | `so` | Schriftelijke overhoring |
-| `schoolexamen` | Schoolexamen |
+| `schoolexamen` | Schoolexamen — shown in the exam colour (dark yellow) |
+| `praktische opdracht` | Praktische opdracht — shown in the exam colour (`po` also works) |
 | `presentatie` | Presentatie |
 | `luistertoets` | Luistertoets |
 

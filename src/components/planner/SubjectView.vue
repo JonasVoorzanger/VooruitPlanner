@@ -41,7 +41,7 @@
             v-for="(item, index) in week.items"
             :key="index"
             class="item"
-            :class="{ test: item.isTest }"
+            :class="{ test: item.isTest, exam: item.isExam }"
             @click="$emit('open', { event: item.event, whenLabel: week.label })"
           >
             <div class="item-line">
@@ -135,6 +135,7 @@ export default {
               event,
               typeLabel: meta.label,
               isTest: meta.test,
+              isExam: Boolean(meta.exam),
               title: event.label || meta.label,
               weightLabel: meta.test ? weightLabel(event.weight) : '',
               description: event.description || '',
@@ -365,6 +366,11 @@ export default {
   border-left: 4px solid var(--accent);
 }
 
+/* Schoolexamens en praktische opdrachten krijgen hun eigen kleur. */
+.item.exam {
+  border-left-color: var(--exam);
+}
+
 .item-line {
   display: flex;
   align-items: baseline;
@@ -384,6 +390,11 @@ export default {
 
 .item.test .type-badge {
   color: var(--accent);
+}
+
+/* Na .item.test, anders wint de accentkleur bij gelijke specificiteit. */
+.item.exam .type-badge {
+  color: var(--exam);
 }
 
 .item-title {

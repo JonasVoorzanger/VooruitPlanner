@@ -69,10 +69,14 @@
               v-for="(item, index) in week.items"
               :key="index"
               class="subject-item"
-              :class="{ test: item.isTest }"
+              :class="{ test: item.isTest, exam: item.isExam }"
             >
               <div class="item-line">
-                <span v-if="item.isTest" class="type-badge pp-mono test">{{ item.typeLabel }}</span>
+                <span
+                  v-if="item.isTest"
+                  class="type-badge pp-mono"
+                  :class="item.isExam ? 'exam' : 'test'"
+                >{{ item.typeLabel }}</span>
                 <span class="item-title">{{ item.title }}</span>
                 <span v-if="item.weightLabel" class="weight pp-mono">{{ item.weightLabel }}</span>
               </div>
@@ -251,6 +255,7 @@ export default {
             return {
               typeLabel: meta.label,
               isTest: meta.test,
+              isExam: Boolean(meta.exam),
               title: event.label || meta.label,
               weightLabel: meta.test ? weightLabel(event.weight) : '',
               description: event.description || '',
@@ -582,6 +587,10 @@ export default {
   border-left: 0.9mm solid var(--accent);
 }
 
+.subject-item.exam {
+  border-left-color: var(--exam);
+}
+
 .subject-item .item-line {
   display: flex;
   align-items: baseline;
@@ -599,6 +608,10 @@ export default {
 
 .subject-item .type-badge.test {
   color: var(--accent);
+}
+
+.subject-item .type-badge.exam {
+  color: var(--exam);
 }
 
 .subject-item .item-title {

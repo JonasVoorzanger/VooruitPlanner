@@ -22,7 +22,7 @@
       <div v-if="planItems.length && testItems.length" class="section-divider" aria-hidden="true"></div>
 
       <div v-if="testItems.length" class="item-section test-section">
-        <div v-for="(item, index) in testItems" :key="`test-${index}`" class="item">
+        <div v-for="(item, index) in testItems" :key="`test-${index}`" class="item" :class="{ exam: item.meta.exam }">
           <div class="item-line">
             <span class="type-badge pp-mono">{{ item.meta.label }}</span>
             <span v-if="modeFlags.title" class="item-title">{{ item.event.label || item.meta.label }}</span>
@@ -194,9 +194,17 @@ export default {
   margin: 6px 0;
 }
 
-.test-section {
+.test-section .item {
   border-left: 4px solid var(--accent);
   padding-left: 8px;
+}
+
+.test-section .item.exam {
+  border-left-color: var(--exam);
+}
+
+.item.exam .type-badge {
+  color: var(--exam);
 }
 
 .item {

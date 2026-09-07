@@ -19,11 +19,14 @@ export const WEEKDAYS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo']
 
 export const WEEKDAYS_LONG = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag']
 
+// exam: telt mee voor het schoolexamen en krijgt daarom een eigen kleur.
 const TYPE_META = {
   plan: { label: 'Planning', test: false },
   proefwerk: { label: 'Proefwerk', test: true },
   so: { label: 'SO', test: true },
-  schoolexamen: { label: 'Schoolexamen', test: true },
+  schoolexamen: { label: 'Schoolexamen', test: true, exam: true },
+  'praktische opdracht': { label: 'Praktische opdracht', test: true, exam: true },
+  po: { label: 'PO', test: true, exam: true },
   presentatie: { label: 'Presentatie', test: true },
   luistertoets: { label: 'Luistertoets', test: true },
   'school-wide': { label: 'Schoolbreed', test: false },
@@ -119,6 +122,10 @@ export function schoolWideEvents(events) {
 
 export function isTestEvent(event) {
   return typeMeta(event.type).test
+}
+
+export function isExamEvent(event) {
+  return Boolean(typeMeta(event.type).exam)
 }
 
 // ── Filter op soort item ────────────────────────────────────────────────────
@@ -301,6 +308,18 @@ function eventMatchesWeek(event, week) {
   return true
 }
 
+// De leerjaren die in de items voorkomen.
+export function availableYears(events) {
+  const found = new Set()
+  events.forEach((event) => {
+    const year = Number(event.year)
+    if (Number.isFinite(year) && year > 0) {
+      found.add(year)
+    }
+  })
+  return [...found].sort((a, b) => a - b)
+}
+
 export function subjectEventsInWeek(events, week, year, courses) {
   return events.filter(
     (event) =>
@@ -339,11 +358,43 @@ export function buildWeekGroups(events, week, year, courses) {
     .filter(Boolean)
 }
 
+// Eén regel per vak/leerjaar-combinatie waarvoor items bestaan, met de tellingen
+// die de bewerk- en exportpagina's laten zien.
+export function subjectYearRows(events, weeks, subjects) {
+  const rows = []
+
+  availableYears(events).forEach((year) => {
+    subjects.forEach((subject) => {
+      const weeksWithItems = weeks
+        .map((week) => subjectEventsInWeek(events, week, year, [subject.abbreviation]))
+        .filter((items) => items.length > 0)
+
+      const items = weeksWithItems.flat()
+      if (!items.length) {
+        return
+      }
+
+      rows.push({
+        key: `${year}-${subject.abbreviation}`,
+        abbr: subject.abbreviation,
+        name: subject.full_name,
+        year,
+        itemCount: items.length,
+        testCount: items.filter(isTestEvent).length,
+        weekCount: weeksWithItems.length,
+      })
+    })
+  })
+
+  return rows
+}
+
 export function eventDetail(event, subjectsMap, whenLabel) {
   const meta = typeMeta(event.type)
   return {
     typeLabel: meta.label,
     isTest: meta.test,
+    isExam: Boolean(meta.exam),
     title: event.label || meta.label,
     weightLabel: meta.test ? weightLabel(event.weight) : '',
     description: event.description || '',
