@@ -59,8 +59,8 @@ import EventCard from './EventCard.vue'
 import {
   buildDayRows,
   buildWeekGroups,
-  formatShort,
-  formatYearShort,
+  formatWeekRange,
+  isWeekendDay,
   parseDate,
   schoolWideInWeek,
   schoolWideWhenLabel,
@@ -114,12 +114,18 @@ export default {
   },
   emits: ['open'],
   data() {
+    // In het weekend begin je bij de week die eraan komt, niet bij de week die
+    // je net gehad hebt.
+    const focusIndex = isWeekendDay(this.today) ? this.todayIndex + 1 : this.todayIndex
     return {
-      openWeeks: [this.todayIndex, this.todayIndex + 1],
+      openWeeks: [focusIndex, focusIndex + 1],
       showOld: false,
     }
   },
   computed: {
+    isWeekend() {
+      return isWeekendDay(this.today)
+    },
     cardMode() {
       return this.detailLevel === 'compact' ? 'listCompact' : 'listFull'
     },
@@ -171,8 +177,9 @@ export default {
           index,
           week_number: week.week_number,
           label: week.label || `Week ${week.week_number}`,
-          range: `${start.getDate()} – ${formatShort(end)} '${formatYearShort(end)} (wk ${week.week_number})`,
-          isCurrent: this.today >= start && this.today <= end,
+          range: `${formatWeekRange(start, end)} (wk ${week.week_number})`,
+          // (4) In het weekend geen "nu": die week is praktisch voorbij.
+          isCurrent: !this.isWeekend && this.today >= start && this.today <= end,
           isOpen: openSet.has(index),
           past: end < this.today,
           hasSubjectItems: subjectItems.length > 0,
@@ -386,9 +393,22 @@ export default {
 .subject-grid {
   padding: 12px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   align-items: start;
+}
+
+/* Minder ruimte, minder kolommen — liever brede kaarten dan afgeknepen tekst. */
+@media (max-width: 1080px) {
+  .subject-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .subject-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .empty {
@@ -407,21 +427,24 @@ export default {
     border-bottom: 1px solid var(--border);
   }
 
+  .subject-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  /* Naam, badge en aantal op de hoofdregel; de datums eronder. */
   .week-head {
     display: grid;
-    grid-template-columns: 16px 1fr auto;
+    grid-template-columns: 16px auto auto 1fr;
     grid-template-areas:
-      'chevron label badge'
-      '. range range'
-      '. summary summary';
-    row-gap: 4px;
+      'chevron label badge summary'
+      '.       range range range';
+    row-gap: 3px;
     column-gap: 8px;
-    align-items: start;
+    align-items: center;
   }
 
   .week-head .chevron {
     grid-area: chevron;
-    margin-top: 2px;
   }
 
   .week-label {
@@ -436,19 +459,15 @@ export default {
 
   .status-badge {
     grid-area: badge;
-    justify-self: end;
   }
 
   .summary {
     grid-area: summary;
-    display: block;
+    justify-self: end;
     margin-left: 0;
     font-size: 11.5px;
     color: var(--muted);
-  }
-
-  .week-head.open .summary {
-    display: none;
+    text-align: right;
   }
 }
 </style>

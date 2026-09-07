@@ -217,6 +217,7 @@ export default {
   font-weight: 500;
   color: var(--text);
   text-wrap: pretty;
+  overflow-wrap: anywhere;
 }
 
 .weight {
@@ -233,6 +234,7 @@ export default {
   color: var(--muted);
   line-height: 1.4;
   text-wrap: pretty;
+  overflow-wrap: anywhere;
 }
 
 .item-desc :deep(p) {

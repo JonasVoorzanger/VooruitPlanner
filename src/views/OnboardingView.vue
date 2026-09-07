@@ -50,16 +50,37 @@
           <div class="count pp-mono">{{ courses.length }} gekozen</div>
         </div>
       </div>
+      <p v-if="!year" class="subject-hint">Kies eerst een leerjaar om te zien welke vakken een planner hebben.</p>
       <div class="chip-row subjects">
         <button
-          v-for="subject in subjects"
+          v-for="subject in selectableSubjects"
           :key="subject.abbreviation"
           class="course-chip"
           :class="{ active: courses.includes(subject.abbreviation) }"
+          :title="subject.full_name"
           @click="toggleCourse(subject.abbreviation)"
         >
           <span class="abbr pp-mono">{{ subject.abbreviation }}</span>&nbsp;{{ subject.full_name }}
         </button>
+      </div>
+
+      <!-- Vakken zonder planner staan uit de weg, maar blijven wel op te vragen. -->
+      <div v-if="unavailableCount" class="unavailable-block">
+        <button class="toggle-unavailable" @click="showUnavailable = !showUnavailable">
+          <span class="chevron">{{ showUnavailable ? '▾' : '▸' }}</span>
+          {{ showUnavailable ? 'Verberg' : 'Toon' }} vakken zonder planner ({{ unavailableCount }})
+        </button>
+
+        <template v-if="showUnavailable">
+          <div class="chip-row unavailable">
+            <span v-for="subject in unavailableSubjects" :key="subject.abbreviation" class="course-chip inactive">
+              <span class="abbr pp-mono">{{ subject.abbreviation }}</span>&nbsp;{{ subject.full_name }}
+            </span>
+          </div>
+          <p class="subject-hint">
+            Voor deze vakken is nog geen planner geüpload voor leerjaar {{ year }}, dus je kunt ze nog niet kiezen.
+          </p>
+        </template>
       </div>
 
       <button class="confirm" :disabled="!canConfirm" @click="confirm">Planner openen</button>
@@ -75,7 +96,7 @@
 <script>
 import { availableProfileCourses, PROFILES } from '../data/profiles'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
-import { loadSelection, saveSelection } from '../utils/plannerModel'
+import { coursesWithItems, loadSelection, saveSelection } from '../utils/plannerModel'
 
 export default {
   name: 'OnboardingView',
@@ -86,11 +107,29 @@ export default {
       year: selection.year,
       courses: [...selection.courses],
       profiles: PROFILES,
+      showUnavailable: false,
     }
   },
   computed: {
     subjects() {
       return this.spreadsheetStore.subjects
+    },
+    // Zonder gekozen leerjaar weten we nog niet welke planners er zijn; dan is
+    // alles nog kiesbaar.
+    availableCourses() {
+      if (!this.year) {
+        return null
+      }
+      return coursesWithItems(this.spreadsheetStore.events, this.year)
+    },
+    selectableSubjects() {
+      return this.subjects.filter((subject) => this.isAvailable(subject.abbreviation))
+    },
+    unavailableSubjects() {
+      return this.subjects.filter((subject) => !this.isAvailable(subject.abbreviation))
+    },
+    unavailableCount() {
+      return this.unavailableSubjects.length
     },
     // Highlights the profile whose vakkenpakket matches the current selection.
     activeProfileId() {
@@ -100,12 +139,13 @@ export default {
 
       const selected = [...this.courses].sort().join('.')
       const match = this.profiles.find(
-        (profile) => availableProfileCourses(profile, this.year, this.subjects).sort().join('.') === selected,
+        (profile) =>
+          availableProfileCourses(profile, this.year, this.selectableSubjects).sort().join('.') === selected,
       )
       return match ? match.id : null
     },
     allCoursesSelected() {
-      return this.subjects.length > 0 && this.courses.length === this.subjects.length
+      return this.selectableSubjects.length > 0 && this.courses.length === this.selectableSubjects.length
     },
     canConfirm() {
       return [4, 5].includes(this.year) && this.courses.length > 0
@@ -123,8 +163,20 @@ export default {
       return `${window.location.host}/#${this.plannerPath}`
     },
   },
+  watch: {
+    // Vakken zonder planner voor het nieuwe leerjaar vallen uit de keuze.
+    year() {
+      this.courses = this.courses.filter((course) => this.isAvailable(course))
+    },
+  },
   methods: {
+    isAvailable(abbreviation) {
+      return !this.availableCourses || this.availableCourses.has(abbreviation)
+    },
     toggleCourse(abbreviation) {
+      if (!this.isAvailable(abbreviation)) {
+        return
+      }
       if (this.courses.includes(abbreviation)) {
         this.courses = this.courses.filter((course) => course !== abbreviation)
       } else {
@@ -136,7 +188,7 @@ export default {
         return
       }
 
-      const profileSelection = availableProfileCourses(profile, this.year, this.subjects)
+      const profileSelection = availableProfileCourses(profile, this.year, this.selectableSubjects)
       // Klikken op het actieve profiel maakt de keuze weer leeg.
       this.courses = this.activeProfileId === profile.id ? [] : profileSelection
     },
@@ -144,7 +196,7 @@ export default {
       if (this.allCoursesSelected) {
         this.courses = []
       } else {
-        this.courses = this.subjects.map((subject) => subject.abbreviation)
+        this.courses = this.selectableSubjects.map((subject) => subject.abbreviation)
       }
     },
     confirm() {
@@ -170,7 +222,7 @@ export default {
 
 .panel {
   width: 100%;
-  max-width: 560px;
+  max-width: 720px;
   animation: pp-fade 0.4s ease both;
 }
 
@@ -278,6 +330,58 @@ export default {
 
 .chip-row.subjects {
   margin-bottom: 26px;
+}
+
+.subject-hint {
+  font-size: 12.5px;
+  color: var(--faint);
+  margin: 10px 0 0;
+  line-height: 1.4;
+}
+
+.unavailable-block {
+  margin-top: -14px;
+  margin-bottom: 26px;
+}
+
+.toggle-unavailable {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+}
+
+.toggle-unavailable:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.toggle-unavailable .chevron {
+  font-size: 11px;
+}
+
+.chip-row.unavailable {
+  margin-top: 12px;
+}
+
+/* Geen knop maar een label: er valt niets te kiezen. */
+.course-chip.inactive {
+  color: var(--faint);
+  background: var(--surface-2);
+  border-style: dashed;
+  cursor: default;
+}
+
+.course-chip.inactive .abbr {
+  color: var(--faint);
 }
 
 .profile-hint {

@@ -1,5 +1,5 @@
 <template>
-  <v-app v-if="isAdminRoute">
+  <v-app v-if="isAdminRoute" class="pp-screen-only">
     <v-app-bar color="primary" density="comfortable">
       <v-app-bar-title>PeriodePlanner</v-app-bar-title>
       <template #append>
@@ -32,13 +32,14 @@ export default {
       navigationItems: [
         { title: 'Planner', to: '/', icon: 'mdi-calendar-month-outline' },
         { title: 'Upload', to: '/upload', icon: 'mdi-file-upload-outline' },
+        { title: 'Bulkexport', to: '/export', icon: 'mdi-file-export-outline' },
         { title: 'Settings', to: '/settings', icon: 'mdi-cog-outline' },
       ],
     }
   },
   computed: {
     isAdminRoute() {
-      return ['upload', 'settings'].includes(this.$route.name)
+      return ['upload', 'settings', 'bulkExport'].includes(this.$route.name)
     },
   },
 }

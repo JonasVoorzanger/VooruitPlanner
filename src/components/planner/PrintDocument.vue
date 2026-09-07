@@ -72,7 +72,7 @@
               :class="{ test: item.isTest }"
             >
               <div class="item-line">
-                <span class="type-badge pp-mono" :class="{ test: item.isTest }">{{ item.typeLabel }}</span>
+                <span v-if="item.isTest" class="type-badge pp-mono test">{{ item.typeLabel }}</span>
                 <span class="item-title">{{ item.title }}</span>
                 <span v-if="item.weightLabel" class="weight pp-mono">{{ item.weightLabel }}</span>
               </div>
@@ -163,6 +163,7 @@ import {
   addDays,
   buildWeekGroups,
   formatShort,
+  formatWeekRange,
   formatYearShort,
   filtersLabel,
   isTestEvent,
@@ -262,10 +263,7 @@ export default {
         return {
           key: `${week.start_date}-${week.week_number}`,
           label: week.label || `Week ${week.week_number}`,
-          range:
-            start && end
-              ? `${start.getDate()} – ${formatShort(end)} '${formatYearShort(end)} (wk ${week.week_number})`
-              : '',
+          range: start && end ? `${formatWeekRange(start, end)} (wk ${week.week_number})` : '',
           items,
           summary: testCount
             ? `${items.length} ${items.length === 1 ? 'item' : 'items'} · ${testCount} ${testCount === 1 ? 'toets' : 'toetsen'}`
@@ -326,10 +324,7 @@ export default {
         return {
           key: `${week.start_date}-${week.week_number}`,
           label: week.label || `Week ${week.week_number}`,
-          range:
-            start && end
-              ? `${start.getDate()} – ${formatShort(end)} '${formatYearShort(end)} (wk ${week.week_number})`
-              : '',
+          range: start && end ? `${formatWeekRange(start, end)} (wk ${week.week_number})` : '',
           days,
           hasDayItems: days.length > 0,
           groups: buildWeekGroups(this.events, week, this.year, this.courses),

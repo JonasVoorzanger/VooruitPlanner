@@ -3,6 +3,7 @@ import OnboardingView from '../views/OnboardingView.vue'
 import PlannerView from '../views/PlannerView.vue'
 import UploadView from '../views/UploadView.vue'
 import SettingsView from '../views/SettingsView.vue'
+import BulkExportView from '../views/BulkExportView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -26,6 +27,11 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: SettingsView,
+    },
+    {
+      path: '/export',
+      name: 'bulkExport',
+      component: BulkExportView,
     },
     {
       path: '/:pathMatch(.*)*',

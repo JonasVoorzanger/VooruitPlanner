@@ -26,41 +26,34 @@
     </p>
 
     <div class="weeks">
-      <template v-for="week in visibleWeeks" :key="week.key">
-        <section v-if="week.items.length" class="week-block">
-          <div class="week-head">
-            <span class="week-label">{{ week.label }}</span>
-            <span class="week-range pp-mono">{{ week.range }}</span>
-            <span v-if="week.isCurrent" class="status-badge current">nu</span>
-            <span v-else-if="week.past" class="status-badge past">al voorbij</span>
-            <span class="summary pp-mono">{{ week.summary }}</span>
-          </div>
-
-          <div class="items">
-            <article
-              v-for="(item, index) in week.items"
-              :key="index"
-              class="item"
-              :class="{ test: item.isTest }"
-              @click="$emit('open', { event: item.event, whenLabel: week.label })"
-            >
-              <div class="item-line">
-                <span class="type-badge pp-mono">{{ item.typeLabel }}</span>
-                <span class="item-title">{{ item.title }}</span>
-                <span v-if="item.weightLabel" class="weight pp-mono">{{ item.weightLabel }}</span>
-              </div>
-              <MarkdownContent v-if="item.description" class="item-desc" :content="item.description" />
-            </article>
-          </div>
-        </section>
-
-        <!-- Lege week: alleen een streepje, zodat de week wel zichtbaar blijft. -->
-        <div v-else class="week-divider" :class="{ current: week.isCurrent }">
-          <span class="divider-label pp-mono">{{ week.label }} · {{ week.range }}</span>
+      <section v-for="week in visibleWeeks" :key="week.key" class="week">
+        <!-- Weekgegevens blijven op de achtergrond; de items zijn de inhoud. -->
+        <div class="week-marker" :class="{ empty: !week.items.length }">
+          <span class="marker-label pp-mono">{{ week.label }}</span>
+          <span class="marker-range pp-mono">{{ week.range }}</span>
           <span v-if="week.isCurrent" class="status-badge current">nu</span>
-          <span class="divider-rule" aria-hidden="true"></span>
+          <span class="marker-rule" aria-hidden="true"></span>
+          <span v-if="week.items.length" class="marker-count pp-mono">{{ week.summary }}</span>
         </div>
-      </template>
+
+        <div v-if="week.items.length" class="items">
+          <article
+            v-for="(item, index) in week.items"
+            :key="index"
+            class="item"
+            :class="{ test: item.isTest }"
+            @click="$emit('open', { event: item.event, whenLabel: week.label })"
+          >
+            <div class="item-line">
+              <!-- (2) Alleen toetsen krijgen een label; planning is de standaard. -->
+              <span v-if="item.isTest" class="type-badge pp-mono">{{ item.typeLabel }}</span>
+              <span class="item-title">{{ item.title }}</span>
+              <span v-if="item.weightLabel" class="weight pp-mono">{{ item.weightLabel }}</span>
+            </div>
+            <MarkdownContent v-if="item.description" class="item-desc" :content="item.description" />
+          </article>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -68,8 +61,8 @@
 <script>
 import MarkdownContent from '../MarkdownContent.vue'
 import {
-  formatShort,
-  formatYearShort,
+  formatWeekRange,
+  isWeekendDay,
   parseDate,
   subjectEventsInWeek,
   typeMeta,
@@ -154,11 +147,10 @@ export default {
         return {
           key: `${week.start_date}-${week.week_number}`,
           label: week.label || `Week ${week.week_number}`,
-          range:
-            start && end
-              ? `${start.getDate()} – ${formatShort(end)} '${formatYearShort(end)} (wk ${week.week_number})`
-              : '',
-          isCurrent: Boolean(start && end) && this.today >= start && this.today <= end,
+          range: start && end ? `${formatWeekRange(start, end)} (wk ${week.week_number})` : '',
+          // (4) In het weekend geen "nu": die week is praktisch voorbij.
+          isCurrent:
+            !isWeekendDay(this.today) && Boolean(start && end) && this.today >= start && this.today <= end,
           past: Boolean(end) && end < this.today,
           items,
           summary: testCount
@@ -231,8 +223,8 @@ export default {
   font-weight: 600;
 }
 
-/* Op smalle schermen is de volledige vaknaam te veel; de afkorting volstaat. */
 @media (max-width: 760px) {
+  /* Op smalle schermen is de volledige vaknaam te veel; de afkorting volstaat. */
   .subject-chip .full {
     display: none;
   }
@@ -286,33 +278,49 @@ export default {
 .weeks {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
-.week-block {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 13px;
-  overflow: hidden;
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.week-head {
+/* Weekgegevens staan op de achtergrond: een grijs regeltje boven de items. */
+.week-marker {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 12px 15px;
-  border-bottom: 1px solid var(--border);
+  gap: 9px;
+  padding: 6px 2px 0;
 }
 
-.week-label {
-  font-size: 15.5px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.marker-label {
+  font-size: 11.5px;
+  color: var(--faint);
+  white-space: nowrap;
 }
 
-.week-range {
-  font-size: 12.5px;
-  color: var(--muted);
+.marker-range {
+  font-size: 11.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.marker-range::before {
+  content: '· ';
+}
+
+.marker-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.marker-count {
+  font-size: 11px;
+  color: var(--faint);
+  white-space: nowrap;
 }
 
 .status-badge {
@@ -327,23 +335,11 @@ export default {
   background: var(--accent);
 }
 
-.status-badge.past {
-  color: var(--muted);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-}
-
-.summary {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--faint);
-}
-
 .items {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 15px 14px;
+  gap: 8px;
+  padding-bottom: 6px;
 }
 
 .item {
@@ -417,52 +413,45 @@ export default {
   margin: 0;
 }
 
-.week-divider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 1px 4px;
-}
-
-.divider-label {
-  font-size: 11.5px;
-  color: var(--faint);
-  white-space: nowrap;
-}
-
-.divider-rule {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.week-divider.current .divider-label {
-  color: var(--muted);
-}
-
-/* Smal scherm: naam en badge op één regel, de datums eronder. */
+/* Naam, badge en aantal op de hoofdregel; de datums eronder. Dit blok staat
+   bewust ná .week-marker, anders wint de flex-layout daarboven. */
 @media (max-width: 760px) {
-  .week-head {
-    flex-wrap: wrap;
-    row-gap: 4px;
-    padding: 11px 13px;
+  .week-marker {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    grid-template-areas:
+      'label badge rule  count'
+      'range range range range';
+    row-gap: 2px;
+    column-gap: 8px;
+    align-items: center;
   }
 
-  .week-label {
-    font-size: 15px;
+  .marker-label {
+    grid-area: label;
   }
 
-  .summary {
-    order: 2;
+  .marker-range {
+    grid-area: range;
   }
 
-  .week-range {
-    order: 3;
-    flex-basis: 100%;
+  .marker-range::before {
+    content: none;
   }
 
-  .items {
-    padding: 10px 13px 12px;
+  .status-badge {
+    grid-area: badge;
+  }
+
+  .marker-count {
+    grid-area: count;
+    justify-self: end;
+  }
+
+  /* De scheidingslijn blijft ook op smalle schermen de hoofdregel vullen. */
+  .marker-rule {
+    grid-area: rule;
+    width: 100%;
   }
 }
 

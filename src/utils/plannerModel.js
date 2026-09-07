@@ -65,6 +65,16 @@ export function formatShort(date) {
   return `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`
 }
 
+export function weekdayShort(date) {
+  return WEEKDAYS[(date.getDay() + 6) % 7]
+}
+
+// In het weekend is de lopende week praktisch klaar; dan wijst de planner
+// vooruit in plaats van naar de week die je net hebt gehad.
+export function isWeekendDay(date) {
+  return date ? [0, 6].includes(date.getDay()) : false
+}
+
 export function weightLabel(weight) {
   const value = String(weight || '').trim()
   if (!value) {
@@ -80,11 +90,27 @@ export function formatYearShort(date) {
   return String(date.getFullYear()).slice(-2)
 }
 
+// "ma 31 – zo 6 sep '26" — de dagafkortingen maken zichtbaar dat een week van
+// maandag tot en met zondag loopt.
+export function formatWeekRange(start, end) {
+  if (!start || !end) {
+    return ''
+  }
+  return `${weekdayShort(start)} ${start.getDate()} – ${weekdayShort(end)} ${formatShort(end)} '${formatYearShort(end)}`
+}
+
 // dd/mm/yy — gebruikt in de bestandsnaam van de pdf-export.
 export function formatNumericDate(date) {
   const day = String(date.getDate()).padStart(2, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
   return `${day}/${month}/${formatYearShort(date)}`
+}
+
+// Vaste bestandsnaam voor de bulkexport, zodat docenten hun eigen bestand
+// meteen herkennen: "Planner AK klas 4 24/08/26-16/10/26".
+export function subjectExportName(abbreviation, year, start, end) {
+  const range = start && end ? ` ${formatNumericDate(start)}-${formatNumericDate(end)}` : ''
+  return `Planner ${abbreviation} klas ${year}${range}`
 }
 
 export function schoolWideEvents(events) {
@@ -160,6 +186,24 @@ export function saveFilters(filters) {
   } catch {
     // storage unavailable
   }
+}
+
+// De vakafkortingen waarvoor voor dit leerjaar items in de spreadsheet staan.
+// Vakken die hier niet in zitten hebben nog geen planner.
+export function coursesWithItems(events, year) {
+  const found = new Set()
+  events.forEach((event) => {
+    if (normalizeType(event.type) === 'school-wide') {
+      return
+    }
+    if (year && Number(event.year) !== Number(year)) {
+      return
+    }
+    if (event.subject_abbreviation) {
+      found.add(event.subject_abbreviation)
+    }
+  })
+  return found
 }
 
 const YEAR_KEYS = ['year_1', 'year_2', 'year_3', 'year_4', 'year_5', 'year_6']

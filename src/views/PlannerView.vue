@@ -90,6 +90,16 @@
               <div class="filter-hint">Overig zijn de schoolbrede activiteiten en vakanties.</div>
             </div>
           </div>
+          <button
+            class="filter-btn"
+            :title="shareTitle"
+            @click="share()"
+          >
+            <span class="segment-content">
+              <span class="mdi" :class="shareIcon" aria-hidden="true"></span>
+              <span>{{ shareLabel }}</span>
+            </span>
+          </button>
           <button class="filter-btn" title="Exporteren naar A4" @click="openExport()">
             <span class="segment-content">
               <span class="mdi mdi-printer-outline" aria-hidden="true"></span>
@@ -102,9 +112,10 @@
       <div v-if="menuOpen" class="mobile-menu-overlay" @click.self="closeMenu">
         <div class="mobile-menu-panel">
           <div class="mobile-menu-head">
-            <div class="mobile-menu-title">PeriodePlanner</div>
-            <button class="icon-btn" title="Sluiten" @click="closeMenu">
+            <div class="mobile-menu-title">Menu</div>
+            <button class="close-btn" @click="closeMenu">
               <span class="mdi mdi-close" aria-hidden="true"></span>
+              <span>Sluiten</span>
             </button>
           </div>
 
@@ -124,7 +135,7 @@
               </div>
             </div>
 
-            <div class="range-label">{{ rangeLabel }}</div>
+            <div v-if="view === 'month'" class="range-label">{{ rangeLabel }}</div>
 
             <div class="segments mobile-segments">
               <div v-if="view !== 'subject'" class="segment-group">
@@ -178,6 +189,13 @@
                 </div>
               </div>
 
+              <button class="filter-btn" @click="share()">
+                <span class="segment-content">
+                  <span class="mdi" :class="shareIcon" aria-hidden="true"></span>
+                  <span>{{ shareLabel }}</span>
+                </span>
+              </button>
+
               <button class="filter-btn" @click="openExport(true)">
                 <span class="segment-content">
                   <span class="mdi mdi-printer-outline" aria-hidden="true"></span>
@@ -185,6 +203,8 @@
                 </span>
               </button>
             </div>
+
+            <button class="menu-done" @click="closeMenu">Klaar</button>
           </div>
         </div>
       </div>
@@ -317,6 +337,7 @@ export default {
       detailLevel: localStorage.getItem('plannerDetailLevel') === 'compact' ? 'compact' : 'full',
       filters: loadFilters(),
       filterOpen: false,
+      shareState: '',
       monthYear: today.getFullYear(),
       monthMonth: today.getMonth(),
       activeDetails: [],
@@ -419,6 +440,24 @@ export default {
     themeIcon() {
       return this.theme === 'light' ? '☾' : '☀'
     },
+    shareLabel() {
+      if (this.shareState === 'copied') {
+        return 'Link gekopieerd'
+      }
+      if (this.shareState === 'failed') {
+        return 'Kopiëren mislukt'
+      }
+      return 'Delen'
+    },
+    shareIcon() {
+      if (this.shareState === 'copied') {
+        return 'mdi-check'
+      }
+      return 'mdi-share-variant-outline'
+    },
+    shareTitle() {
+      return 'Deel je eigen planner-link — of zet de planner op je beginscherm'
+    },
     anchorDate() {
       const anchorWeek = this.weeks[this.todayIndex]
       return (anchorWeek && parseDate(anchorWeek.start_date)) || this.today
@@ -461,6 +500,7 @@ export default {
   beforeUnmount() {
     window.removeEventListener('resize', this.updateScreenMode)
     document.removeEventListener('click', this.onDocumentClick)
+    window.clearTimeout(this.shareTimer)
   },
   methods: {
     validateSelection() {
@@ -509,6 +549,43 @@ export default {
     },
     closeMenu() {
       this.menuOpen = false
+    },
+    // Het deelvenster van het toestel zelf; daar zit op mobiel ook "Zet op
+    // beginscherm" in. Zonder die ondersteuning valt hij terug op kopiëren.
+    async share() {
+      const url = window.location.href
+      const shareData = {
+        title: 'PeriodePlanner',
+        text: `Planner voor klas ${this.year}: ${this.courses.join(', ')}`,
+        url,
+      }
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData)
+          this.closeMenu()
+          return
+        } catch (error) {
+          // Geannuleerd door de gebruiker: verder niets doen.
+          if (error && error.name === 'AbortError') {
+            return
+          }
+        }
+      }
+
+      try {
+        await navigator.clipboard.writeText(url)
+        this.flashShareState('copied')
+      } catch {
+        this.flashShareState('failed')
+      }
+    },
+    flashShareState(state) {
+      this.shareState = state
+      window.clearTimeout(this.shareTimer)
+      this.shareTimer = window.setTimeout(() => {
+        this.shareState = ''
+      }, 2200)
     },
     toggleFilter(category) {
       this.filters = { ...this.filters, [category]: !this.filters[category] }
@@ -937,6 +1014,39 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+.close-btn {
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.close-btn:hover {
+  border-color: var(--accent-border);
+}
+
+.menu-done {
+  height: 46px;
+  border-radius: 11px;
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 4px;
 }
 
 .mobile-menu-title {

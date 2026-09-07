@@ -119,8 +119,7 @@
 import {
   FILTER_CATEGORIES,
   filterEventsByCategory,
-  formatShort,
-  formatYearShort,
+  formatWeekRange,
   isTestEvent,
   normalizeFilters,
   parseDate,
@@ -236,7 +235,7 @@ export default {
           key: index,
           week,
           label: week.label || `Week ${week.week_number}`,
-          range: start && end ? `${start.getDate()} – ${formatShort(end)} '${formatYearShort(end)}` : '',
+          range: start && end ? formatWeekRange(start, end) : '',
           past: Boolean(end) && end < this.today,
           hasTests: testCount > 0,
           hasItems: subjectItems.length > 0 || schoolCount > 0,
