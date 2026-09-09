@@ -6,14 +6,18 @@
       </button>
 
       <!-- Placeholder-afbeeldingen staan in public/intro en zijn te vervangen
-           door echte schermafbeeldingen met dezelfde bestandsnaam. -->
-      <div class="shot">
+           door echte schermafbeeldingen met dezelfde bestandsnaam. Op mobiel
+           blijven ze weg: daar zijn ze te klein om iets aan af te lezen. -->
+      <div v-if="!isMobile" class="shot">
         <img :src="step.image" :alt="step.title" />
       </div>
 
-      <div class="body">
+      <div class="head">
         <div class="step-count pp-mono">Stap {{ index + 1 }} van {{ steps.length }}</div>
         <h2 class="title">{{ step.title }}</h2>
+      </div>
+
+      <div class="body">
         <p class="text">{{ step.text }}</p>
 
         <label v-if="isLast" class="hide-line">
@@ -56,9 +60,12 @@ export function introHidden() {
   }
 }
 
+// Zelfde grens als de media query onderaan dit bestand.
+const MOBILE_QUERY = '(max-width: 600px)'
+
 const STEPS = [
   {
-    title: 'Welkom bij PeriodePlanner',
+    title: 'Welkom bij de HAL PeriodePlanner',
     text: 'Stel eenmalig je leerjaar en je vakken in. Daarna opent de planner altijd op jouw eigen link, met alleen de vakken die jij volgt.',
     image: '/intro/stap-1.png',
   },
@@ -100,6 +107,8 @@ export default {
       index: 0,
       hideNextTime: false,
       steps: STEPS,
+      isMobile: false,
+      mediaQuery: null,
     }
   },
   computed: {
@@ -112,11 +121,20 @@ export default {
   },
   mounted() {
     document.addEventListener('keydown', this.onKeydown)
+    this.mediaQuery = window.matchMedia(MOBILE_QUERY)
+    this.isMobile = this.mediaQuery.matches
+    this.mediaQuery.addEventListener('change', this.onMediaChange)
   },
   beforeUnmount() {
     document.removeEventListener('keydown', this.onKeydown)
+    if (this.mediaQuery) {
+      this.mediaQuery.removeEventListener('change', this.onMediaChange)
+    }
   },
   methods: {
+    onMediaChange(event) {
+      this.isMobile = event.matches
+    },
     next() {
       if (this.isLast) {
         this.close()
@@ -223,10 +241,15 @@ export default {
   display: block;
 }
 
+.head {
+  flex: 0 0 auto;
+  padding: 18px 20px 0;
+}
+
 .body {
   flex: 0 0 auto;
   overflow-y: auto;
-  padding: 18px 20px 4px;
+  padding: 8px 20px 4px;
 }
 
 .step-count {
@@ -239,7 +262,7 @@ export default {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  margin: 0 0 8px;
+  margin: 0;
 }
 
 .text {
@@ -348,6 +371,18 @@ export default {
     max-height: none;
     border-radius: 0;
     border: none;
+  }
+
+  /* Zonder afbeelding draagt de kop de stap: als balk bovenaan, met de tekst
+     eronder. De ruimte rechts houdt de sluitknop vrij. */
+  .head {
+    padding: 18px 52px 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .body {
+    flex: 1 1 auto;
+    padding: 16px 20px 4px;
   }
 
   .actions {

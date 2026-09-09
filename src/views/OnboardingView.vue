@@ -5,7 +5,7 @@
     <div class="panel">
       <div class="brand">
         <div class="logo pp-mono">P</div>
-        <div class="brand-name">PeriodePlanner</div>
+        <div class="brand-name">HAL PeriodePlanner</div>
       </div>
 
       <!-- Stap voor stap: de volgende stap verschijnt pas als de vorige klaar is. -->
@@ -141,8 +141,12 @@ export default {
     showSubjectStep() {
       return Boolean(this.year) && (this.profileSkipped || Boolean(this.activeProfileId) || this.courses.length > 0)
     },
+    // Alleen verplichte vakken zijn het melden waard: een keuzevak dat je toch
+    // niet volgt hoeft niet op te vallen omdat er geen planner voor is.
     unavailableSubjects() {
-      return this.subjects.filter((subject) => !this.isAvailable(subject.abbreviation))
+      return this.subjects.filter(
+        (subject) => !this.isAvailable(subject.abbreviation) && this.isRequired(subject),
+      )
     },
     unavailableCount() {
       return this.unavailableSubjects.length
@@ -196,6 +200,16 @@ export default {
     },
     isAvailable(abbreviation) {
       return !this.availableCourses || this.availableCourses.has(abbreviation)
+    },
+    // De kolommen 4_required en 5_required uit de `subjects` tab. Staat het vak
+    // er nog niet in — spreadsheet nog niet opnieuw ingeladen — dan tonen we het
+    // liever te veel dan te weinig.
+    isRequired(subject) {
+      const flags = subject.required
+      if (!flags || !(this.year in flags)) {
+        return true
+      }
+      return Boolean(flags[this.year])
     },
     toggleCourse(abbreviation) {
       if (!this.isAvailable(abbreviation)) {
@@ -405,6 +419,8 @@ export default {
   margin-bottom: 4px;
 }
 
+/* Zachte waarschuwingskleur: verplichte vakken zonder planner mogen opvallen,
+   maar niet alarmeren. */
 .toggle-unavailable {
   display: inline-flex;
   align-items: center;
@@ -412,17 +428,17 @@ export default {
   height: 30px;
   padding: 0 11px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--muted);
+  border: 1px solid color-mix(in oklab, var(--exam) 40%, var(--border));
+  background: var(--exam-soft);
+  color: color-mix(in oklab, var(--exam) 55%, var(--text));
   cursor: pointer;
   font-family: inherit;
   font-size: 12.5px;
 }
 
 .toggle-unavailable:hover {
-  color: var(--text);
-  border-color: var(--border-strong);
+  border-color: var(--exam);
+  color: color-mix(in oklab, var(--exam) 25%, var(--text));
 }
 
 .toggle-unavailable .chevron {

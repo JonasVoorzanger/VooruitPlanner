@@ -77,6 +77,10 @@ function parseCsv(text) {
 // src/data/profiles.js.
 const PROFILE_COLUMNS = ['4_CM', '5_CM', '4_EM', '5_EM', '4_NG', '5_NG', '4_NT', '5_NT']
 
+// De kolommen in de `subjects` tab die aangeven of een vak in dat leerjaar
+// verplicht is (4_required, 5_required).
+const REQUIRED_YEARS = [4, 5]
+
 function parseBooleanFlag(value) {
   return ['1', 'true', 'yes', 'x'].includes(String(value || '').trim().toLowerCase())
 }
@@ -139,6 +143,12 @@ async function main() {
       // het vak in die snelkeuze zit.
       profiles: PROFILE_COLUMNS.reduce((flags, column) => {
         flags[column] = parseBooleanFlag(row[column])
+        return flags
+      }, {}),
+      // Verplicht vak in dat leerjaar? Alleen die vakken zijn het melden waard
+      // als er nog geen planner voor is.
+      required: REQUIRED_YEARS.reduce((flags, year) => {
+        flags[year] = parseBooleanFlag(row[`${year}_required`])
         return flags
       }, {}),
     }))
