@@ -16,6 +16,11 @@
   /* Schoolexamens en praktische opdrachten: donkergeel, los van het accent. */
   --exam: oklch(0.56 0.125 76);
   --exam-soft: oklch(0.96 0.04 86);
+  /* Let op: je ziet niet alles. Eigen tint, zodat een waarschuwing nooit voor
+     een schoolexamen wordt aangezien. */
+  --warn: oklch(0.55 0.13 62);
+  --warn-soft: oklch(0.955 0.045 72);
+  --warn-border: oklch(0.82 0.08 68);
   --shadow: 0 1px 2px rgba(24, 26, 45, 0.05), 0 4px 14px rgba(24, 26, 45, 0.06);
   --shadow-card: 0 1px 2px rgba(24, 26, 45, 0.06), 0 3px 8px rgba(24, 26, 45, 0.09);
   --shadow-card-hover: 0 2px 5px rgba(24, 26, 45, 0.09), 0 8px 18px rgba(24, 26, 45, 0.14);
@@ -39,6 +44,9 @@
   --on-accent: oklch(0.17 0.02 264);
   --exam: oklch(0.81 0.13 84);
   --exam-soft: oklch(0.32 0.05 84);
+  --warn: oklch(0.8 0.13 68);
+  --warn-soft: oklch(0.32 0.06 62);
+  --warn-border: oklch(0.47 0.09 65);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.36);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45), 0 3px 9px rgba(0, 0, 0, 0.4);
   --shadow-card-hover: 0 2px 6px rgba(0, 0, 0, 0.55), 0 9px 22px rgba(0, 0, 0, 0.5);

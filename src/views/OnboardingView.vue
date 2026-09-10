@@ -102,6 +102,7 @@
 import IntroTour, { introHidden } from '../components/IntroTour.vue'
 import { availableProfileCourses, PROFILES } from '../data/profiles'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
+import { captureEvent } from '../utils/analytics'
 import { coursesWithItems, loadSelection, saveSelection } from '../utils/plannerModel'
 
 export default {
@@ -242,6 +243,11 @@ export default {
         return
       }
       saveSelection({ year: this.year, courses: this.courses })
+      captureEvent('planner_opened', {
+        year: this.year,
+        course_count: this.courses.length,
+        selection_method: this.activeProfileId ? 'profile' : 'manual',
+      })
       this.$router.push(this.plannerPath)
     },
   },

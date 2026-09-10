@@ -20,6 +20,35 @@
           </div>
         </div>
         <div class="topbar-actions">
+          <button
+            class="icon-btn"
+            :class="{ wide: shareState }"
+            :title="shareTitle"
+            aria-label="Deel je planner-link"
+            @click="share()"
+          >
+            <span class="mdi" :class="shareIcon" aria-hidden="true"></span>
+            <!-- Zonder tekst zou je niet zien dat het kopieren gelukt is, dus
+                 klapt de knop even open met de uitkomst erin. -->
+            <span v-if="shareState" class="icon-btn-label">{{ shareLabel }}</span>
+          </button>
+          <button
+            class="icon-btn"
+            title="Exporteren naar A4"
+            aria-label="Exporteren naar A4"
+            @click="openExport()"
+          >
+            <span class="mdi mdi-printer-outline" aria-hidden="true"></span>
+          </button>
+          <span class="topbar-divider" aria-hidden="true"></span>
+          <button
+            class="icon-btn"
+            title="Zie je iets wat anders of beter kan? Laat het ons weten!"
+            aria-label="Feedback geven"
+            @click="feedbackOpen = true"
+          >
+            <span class="mdi mdi-message-text-outline" aria-hidden="true"></span>
+          </button>
           <button class="icon-btn" title="Uitleg over de planner" @click="introOpen = true">
             <span class="mdi mdi-help-circle-outline" aria-hidden="true"></span>
           </button>
@@ -37,21 +66,23 @@
         </div>
         <div class="range-label">{{ rangeLabel }}</div>
         <div class="segments">
-          <div v-if="view !== 'subject'" class="segment-group">
+          <div v-if="view !== 'subject'" class="segment-group detail-group">
             <button
               v-for="option in detailOptions"
               :key="option.value"
               class="segment"
               :class="{ active: detailLevel === option.value }"
+              :title="option.hint"
+              :aria-label="option.hint"
               @click="detailLevel = option.value"
             >
               <span class="segment-content">
                 <span class="mdi" :class="option.icon" aria-hidden="true"></span>
-                <span>{{ option.label }}</span>
+                <span class="segment-label">{{ option.label }}</span>
               </span>
             </button>
           </div>
-          <div class="segment-group">
+          <div class="segment-group view-group">
             <button
               v-for="option in viewOptions"
               :key="option.value"
@@ -70,15 +101,21 @@
           <div ref="filterWrap" class="filter-wrap">
             <button
               class="filter-btn"
-              :class="{ active: isFiltered }"
+              :class="{ warning: isFiltered }"
               :aria-expanded="filterOpen ? 'true' : 'false'"
-              title="Kies welke soorten items je ziet"
+              :title="filterTitle"
               @click="filterOpen = !filterOpen"
             >
               <span class="segment-content">
-                <span class="mdi mdi-filter-variant" aria-hidden="true"></span>
+                <span
+                  class="mdi"
+                  :class="isFiltered ? 'mdi-filter-variant-remove' : 'mdi-filter-variant'"
+                  aria-hidden="true"
+                ></span>
                 <span>Filter</span>
-                <span v-if="isFiltered" class="filter-count pp-mono">{{ activeFilterCount }}/3</span>
+                <span v-if="isFiltered" class="filter-count pp-mono">
+                  {{ activeFilterCount }}/{{ filterOptions.length }}
+                </span>
               </span>
             </button>
 
@@ -92,25 +129,13 @@
                 <span class="mdi" :class="option.icon" aria-hidden="true"></span>
                 <span>{{ option.label }}</span>
               </label>
+              <button v-if="isFiltered" class="filter-reset" @click="resetFilters">
+                <span class="mdi mdi-restore" aria-hidden="true"></span>
+                <span>Alles weer tonen</span>
+              </button>
               <div class="filter-hint">Overig zijn de schoolbrede activiteiten en vakanties.</div>
             </div>
           </div>
-          <button
-            class="filter-btn"
-            :title="shareTitle"
-            @click="share()"
-          >
-            <span class="segment-content">
-              <span class="mdi" :class="shareIcon" aria-hidden="true"></span>
-              <span>{{ shareLabel }}</span>
-            </span>
-          </button>
-          <button class="filter-btn" title="Exporteren naar A4" @click="openExport()">
-            <span class="segment-content">
-              <span class="mdi mdi-printer-outline" aria-hidden="true"></span>
-              <span>Exporteren</span>
-            </span>
-          </button>
         </div>
       </div>
 
@@ -127,6 +152,14 @@
           <div class="mobile-menu-subjects pp-mono">{{ mobileSubjectLine }}</div>
 
           <div class="mobile-menu-actions">
+            <button
+              class="icon-btn"
+              title="Feedback geven"
+              aria-label="Feedback geven"
+              @click="openFeedback()"
+            >
+              <span class="mdi mdi-message-text-outline" aria-hidden="true"></span>
+            </button>
             <button class="icon-btn" title="Uitleg over de planner" @click="openIntro()">
               <span class="mdi mdi-help-circle-outline" aria-hidden="true"></span>
             </button>
@@ -146,7 +179,7 @@
             <div v-if="view === 'month'" class="range-label">{{ rangeLabel }}</div>
 
             <div class="segments mobile-segments">
-              <div v-if="view !== 'subject'" class="segment-group">
+              <div v-if="view !== 'subject'" class="segment-group detail-group">
                 <button
                   v-for="option in detailOptions"
                   :key="`menu-detail-${option.value}`"
@@ -161,7 +194,7 @@
                 </button>
               </div>
 
-              <div class="segment-group">
+              <div class="segment-group view-group">
                 <button
                   v-for="option in viewOptions"
                   :key="`menu-view-${option.value}`"
@@ -179,21 +212,32 @@
               <div v-if="isNarrowScreen" class="view-hint">Maand-weergave alleen op grote schermen</div>
 
               <div class="mobile-filter">
-                <div class="mobile-filter-label">Filter</div>
+                <div class="mobile-filter-label">
+                  <span>Filter</span>
+                  <span v-if="isFiltered" class="mobile-filter-warning">
+                    <span class="mdi mdi-alert-outline" aria-hidden="true"></span>
+                    <span>{{ activeFilterCount }}/{{ filterOptions.length }} — je ziet niet alles</span>
+                  </span>
+                </div>
                 <div class="mobile-filter-options">
-                  <button
+                  <label
                     v-for="option in filterOptions"
                     :key="`menu-filter-${option.value}`"
-                    class="filter-btn"
-                    :class="{ active: filters[option.value] }"
-                    :aria-pressed="filters[option.value] ? 'true' : 'false'"
-                    @click="toggleFilter(option.value)"
+                    class="filter-option"
                   >
-                    <span class="segment-content">
-                      <span class="mdi" :class="option.icon" aria-hidden="true"></span>
-                      <span>{{ option.label }}</span>
-                    </span>
+                    <input
+                      type="checkbox"
+                      :checked="filters[option.value]"
+                      @change="toggleFilter(option.value)"
+                    />
+                    <span class="mdi" :class="option.icon" aria-hidden="true"></span>
+                    <span>{{ option.label }}</span>
+                  </label>
+                  <button v-if="isFiltered" class="filter-reset" @click="resetFilters">
+                    <span class="mdi mdi-restore" aria-hidden="true"></span>
+                    <span>Alles weer tonen</span>
                   </button>
+                  <div class="filter-hint">Overig zijn de schoolbrede activiteiten en vakanties.</div>
                 </div>
               </div>
 
@@ -270,6 +314,8 @@
           </button>
         </div>
       </footer> -->
+
+      <FeedbackBox :context="feedbackContext" />
     </div>
 
     <!-- Sluitteken onderaan de pagina, buiten de inhoudskolom zodat de lijnen
@@ -297,6 +343,11 @@
     </div>
 
     <IntroTour v-if="introOpen" @close="introOpen = false" />
+    <FeedbackDialog
+      v-if="feedbackOpen"
+      :context="feedbackContext"
+      @close="feedbackOpen = false"
+    />
 
     <EventModal v-if="activeDetails.length" :details="activeDetails" @close="activeDetails = []" />
 
@@ -334,6 +385,8 @@
 
 <script>
 import IntroTour from '../components/IntroTour.vue'
+import FeedbackBox from '../components/FeedbackBox.vue'
+import FeedbackDialog from '../components/FeedbackDialog.vue'
 import EventModal from '../components/planner/EventModal.vue'
 import ExportDialog from '../components/planner/ExportDialog.vue'
 import MonthGrid from '../components/planner/MonthGrid.vue'
@@ -342,7 +395,9 @@ import SubjectView from '../components/planner/SubjectView.vue'
 import WeekList from '../components/planner/WeekList.vue'
 import { useTheme } from '../composables/useTheme'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
+import { captureEvent } from '../utils/analytics'
 import {
+  DEFAULT_FILTERS,
   eventDetail,
   FILTER_CATEGORIES,
   filterEventsByCategory,
@@ -360,6 +415,8 @@ export default {
   components: {
     EventModal,
     IntroTour,
+    FeedbackBox,
+    FeedbackDialog,
     ExportDialog,
     MonthGrid,
     PrintDocument,
@@ -389,6 +446,7 @@ export default {
       shareState: '',
       linkCopied: false,
       introOpen: false,
+      feedbackOpen: false,
       monthYear: today.getFullYear(),
       monthMonth: today.getMonth(),
       activeDetails: [],
@@ -400,8 +458,18 @@ export default {
         { value: 'subject', label: 'Per vak', icon: 'mdi-book-open-page-variant-outline' },
       ],
       detailOptions: [
-        { value: 'compact', label: 'Compact', icon: 'mdi-magnify-minus-outline' },
-        { value: 'full', label: 'Uitgebreid', icon: 'mdi-magnify-plus-outline' },
+        {
+          value: 'compact',
+          label: 'Compact',
+          hint: 'Compact — alleen de titels',
+          icon: 'mdi-magnify-minus-outline',
+        },
+        {
+          value: 'full',
+          label: 'Uitgebreid',
+          hint: 'Uitgebreid — met de toelichting erbij',
+          icon: 'mdi-magnify-plus-outline',
+        },
       ],
       filterOptions: FILTER_CATEGORIES,
     }
@@ -436,6 +504,11 @@ export default {
     },
     isFiltered() {
       return this.activeFilterCount < this.filterOptions.length
+    },
+    filterTitle() {
+      return this.isFiltered
+        ? 'Let op: er staat een filter aan, je ziet niet alles'
+        : 'Kies welke soorten items je ziet'
     },
     exportEvents() {
       if (!this.exportSettings) {
@@ -491,6 +564,14 @@ export default {
     themeIcon() {
       return this.theme === 'light' ? '☾' : '☀'
     },
+    // Geen namen of vakkenlijst: alleen waar de leerling stond toen hij schreef.
+    feedbackContext() {
+      return {
+        view: this.view,
+        year: this.year,
+        course_count: this.courses.length,
+      }
+    },
     shareLabel() {
       if (this.shareState === 'copied') {
         return 'Link gekopieerd'
@@ -504,7 +585,7 @@ export default {
       if (this.shareState === 'copied') {
         return 'mdi-check'
       }
-      return 'mdi-share-variant-outline'
+      return 'mdi-export-variant'
     },
     // De eigen link van deze leerling, zoals hij ook te delen is.
     shareUrl() {
@@ -619,6 +700,11 @@ export default {
       if (navigator.share) {
         try {
           await navigator.share(shareData)
+          captureEvent('planner_shared', {
+            share_method: 'native',
+            year: this.year,
+            course_count: this.courses.length,
+          })
           this.closeMenu()
           return
         } catch (error) {
@@ -631,6 +717,11 @@ export default {
 
       try {
         await navigator.clipboard.writeText(url)
+        captureEvent('planner_shared', {
+          share_method: 'clipboard',
+          year: this.year,
+          course_count: this.courses.length,
+        })
         this.flashShareState('copied')
       } catch {
         this.flashShareState('failed')
@@ -659,8 +750,15 @@ export default {
       this.introOpen = true
       this.closeMenu()
     },
+    openFeedback() {
+      this.feedbackOpen = true
+      this.closeMenu()
+    },
     toggleFilter(category) {
       this.filters = { ...this.filters, [category]: !this.filters[category] }
+    },
+    resetFilters() {
+      this.filters = { ...DEFAULT_FILTERS }
     },
     onDocumentClick(event) {
       if (!this.filterOpen) {
@@ -681,6 +779,14 @@ export default {
     runExport(settings) {
       this.exportOpen = false
       this.exportSettings = settings
+      captureEvent('planner_exported', {
+        year: this.year,
+        view: settings.view,
+        detail_level: settings.detailLevel,
+        week_count: settings.weeks.length,
+        course_count: this.courses.length,
+        active_filter_count: Object.values(settings.filters).filter(Boolean).length,
+      })
       printAfterRender(
         this,
         settings.view === 'month' ? 'landscape' : 'portrait',
@@ -827,6 +933,29 @@ export default {
 .icon-btn .mdi {
   font-size: 19px;
   line-height: 1;
+}
+
+/* Alleen zolang er iets te melden valt over het delen. */
+.icon-btn.wide {
+  width: auto;
+  gap: 7px;
+  padding: 0 11px;
+  color: var(--text);
+  border-color: var(--accent-border);
+}
+
+.icon-btn-label {
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 2px;
 }
 
 .text-btn {
@@ -1066,6 +1195,48 @@ export default {
   box-shadow: none;
 }
 
+/* Alleen op een breed scherm (.controls is op mobiel verborgen). De weergave
+   is het eerste wat mensen willen omzetten, maar het viel niet op dat het een
+   schakelaar was: de actieve weergave krijgt daarom het accent, en de andere
+   twee lichten op zodra de muis erover gaat. */
+.controls .segment {
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.controls .segment:not(.active):not(:disabled):hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.controls .view-group {
+  border-color: var(--accent-border);
+}
+
+/* Compact/Uitgebreid trok in de balk te veel aandacht voor iets wat je zelden
+   omzet: op een breed scherm blijft alleen het loepje over, met de uitleg in
+   de tooltip. */
+.controls .detail-group .segment-label {
+  display: none;
+}
+
+.controls .detail-group .segment {
+  padding: 6px 9px;
+}
+
+.controls .detail-group .segment-content .mdi {
+  font-size: 18px;
+}
+
+.controls .view-group .segment.active {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
+.controls .view-group .segment:not(.active):hover {
+  color: var(--accent);
+}
+
 .view-hint {
   width: 100%;
   font-size: 12px;
@@ -1091,11 +1262,45 @@ export default {
   border-color: var(--accent-border);
 }
 
-.filter-btn.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
+/* Staat er een filter aan, dan is de knop geel: je ziet niet alles, en dat
+   moet je zien zonder het menu open te klappen. */
+.filter-btn.warning {
+  border-color: var(--warn);
+  background: var(--warn-soft);
+  color: var(--warn);
   font-weight: 600;
+}
+
+.filter-btn.warning:hover {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.filter-reset {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 9px;
+  border: none;
+  border-radius: 8px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.filter-reset:hover {
+  background: color-mix(in oklab, var(--warn-soft) 80%, var(--warn) 20%);
+}
+
+.filter-reset .mdi {
+  font-size: 17px;
+  line-height: 1;
 }
 
 .filter-wrap {
@@ -1168,6 +1373,10 @@ export default {
 }
 
 .mobile-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   font-size: 11.5px;
   font-weight: 600;
   text-transform: uppercase;
@@ -1175,16 +1384,54 @@ export default {
   color: var(--muted);
 }
 
-.mobile-filter-options {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+/* Het menu heeft geen filterknop om geel te kleuren, dus staat de waarschuwing
+   hier boven de vinkjes. */
+.mobile-filter-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
-/* Passen de drie knoppen niet naast elkaar, dan wikkelen ze naar een tweede rij. */
-.mobile-filter-options .filter-btn {
-  flex: 1 1 96px;
-  padding: 0 9px;
+.mobile-filter-warning .mdi {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Dezelfde vinkjes als in het uitklapmenu op desktop, maar onder elkaar en
+   met raakvlakken die met een duim te raken zijn. */
+.mobile-filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.mobile-filter-options .filter-option {
+  padding: 11px 10px;
+  font-size: 14px;
+}
+
+.mobile-filter-options .filter-option input {
+  width: 18px;
+  height: 18px;
+}
+
+.mobile-filter-options .filter-hint {
+  padding: 8px 10px 4px;
+}
+
+.mobile-filter-options .filter-reset {
+  padding: 11px 10px;
+  font-size: 14px;
 }
 
 .mobile-segments .filter-btn {

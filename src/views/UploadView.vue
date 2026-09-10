@@ -81,6 +81,7 @@
 <script>
 import * as mammoth from 'mammoth'
 import { useSettingsStore } from '../stores/settings'
+import { captureEvent, captureException } from '../utils/analytics'
 
 const tabDefinitions = {
   weeks: 'week_number,start_date,end_date,label',
@@ -255,8 +256,19 @@ export default {
         }
 
         this.output = this.extractResponseText(data)
+        captureEvent('document_conversion_completed', {
+          file_type: this.activeFile.name.toLowerCase().endsWith('.docx') ? 'docx' : 'pdf',
+          tab_count: this.selectedTabs.length,
+          selected_tabs: [...this.selectedTabs],
+        })
         this.statusMessage = 'Conversie voltooid. Controleer de CSV-uitvoer hieronder.'
       } catch (error) {
+        const properties = {
+          file_type: this.activeFile.name.toLowerCase().endsWith('.docx') ? 'docx' : 'pdf',
+          tab_count: this.selectedTabs.length,
+        }
+        captureEvent('document_conversion_failed', properties)
+        captureException(error, { flow: 'document_conversion', ...properties })
         this.error = error.message || 'Conversie mislukt.'
       } finally {
         this.isConverting = false

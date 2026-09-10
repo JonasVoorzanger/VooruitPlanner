@@ -129,6 +129,7 @@
 <script>
 import ItemEditor from '../components/admin/ItemEditor.vue'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
+import { captureEvent } from '../utils/analytics'
 import { EVENT_COLUMNS, downloadCsv, toCsv } from '../utils/csv'
 import { formatWeekRange, isTestEvent, parseDate, typeMeta } from '../utils/plannerModel'
 
@@ -387,7 +388,16 @@ export default {
       )
     },
     downloadFile() {
+      const hadChanges = this.dirty
       downloadCsv(`events-${this.course}-klas${this.year}.csv`, this.csvText())
+      captureEvent('subject_plan_exported', {
+        year: this.year,
+        subject_abbreviation: this.course,
+        item_count: this.rows.length,
+        test_count: this.testCount,
+        filled_week_count: this.filledWeekCount,
+        had_changes: hadChanges,
+      })
       this.dirty = false
     },
     confirmLeave() {
