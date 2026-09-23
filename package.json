@@ -14,7 +14,6 @@
     "firebase": "^12.15.0",
     "marked": "^18.0.5",
     "pinia": "^3.0.4",
-    "posthog-js": "^1.429.4",
     "vue": "^3.5.38",
     "vue-router": "^4.6.4",
     "vuetify": "^3.12.8"

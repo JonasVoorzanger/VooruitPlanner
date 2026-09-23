@@ -1,6 +1,6 @@
 <template>
   <div class="wrap">
-    <form v-if="state === 'open'" class="form" @submit.prevent="submit">
+    <form v-if="state !== 'sent'" class="form" @submit.prevent="submit">
       <textarea
         ref="input"
         v-model="message"
@@ -12,7 +12,7 @@
       ></textarea>
 
       <div class="form-foot">
-        <!-- De reactie gaat anoniem naar PostHog; zonder deze regel vullen
+        <!-- De reactie wordt anoniem opgeslagen; zonder deze regel vullen
              mensen alsnog hun naam of mailadres in het tekstvak. -->
         <p class="hint">Je bericht komt binnen zonder je naam. Vul hier geen persoonlijke gegevens in.</p>
         <div class="form-actions">
@@ -20,6 +20,7 @@
           <button type="submit" class="btn primary" :disabled="!canSend">Versturen</button>
         </div>
       </div>
+      <p v-if="failed" class="hint error">Versturen lukte niet. Probeer het later nog eens.</p>
     </form>
 
     <p v-else class="thanks">
@@ -30,7 +31,7 @@
 </template>
 
 <script>
-import { captureFeedback } from '../utils/analytics'
+import { sendFeedback } from '../utils/feedback'
 
 export default {
   name: 'FeedbackForm',
@@ -52,14 +53,15 @@ export default {
   emits: ['sent', 'cancel'],
   data() {
     return {
-      // 'open' | 'sent'
+      // 'open' | 'sending' | 'sent'
       state: 'open',
+      failed: false,
       message: '',
     }
   },
   computed: {
     canSend() {
-      return this.message.trim().length > 0
+      return this.state === 'open' && this.message.trim().length > 0
     },
   },
   mounted() {
@@ -76,11 +78,20 @@ export default {
       this.message = ''
       this.$emit('cancel')
     },
-    submit() {
+    async submit() {
       if (!this.canSend) {
         return
       }
-      captureFeedback(this.message.trim(), this.context)
+      this.state = 'sending'
+      this.failed = false
+      try {
+        await sendFeedback(this.message.trim(), this.context)
+      } catch (error) {
+        console.error(error)
+        this.state = 'open'
+        this.failed = true
+        return
+      }
       this.message = ''
       this.state = 'sent'
       this.$emit('sent')
@@ -123,6 +134,11 @@ export default {
   min-width: 200px;
   font-size: 12px;
   color: var(--faint);
+}
+
+.hint.error {
+  margin-top: 8px;
+  color: var(--warn);
 }
 
 .form-actions {

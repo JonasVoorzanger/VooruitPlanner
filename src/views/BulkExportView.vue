@@ -124,7 +124,6 @@ import {
   subjectExportName,
   subjectYearRows,
 } from '../utils/plannerModel'
-import { captureEvent } from '../utils/analytics'
 import { printAfterRender } from '../utils/print'
 
 export default {
@@ -206,12 +205,6 @@ export default {
     exportOne(row) {
       const bounds = this.weekBounds(this.printWeeks(row))
       this.printTargets = [row]
-      captureEvent('bulk_planner_exported', {
-        export_scope: 'single_subject',
-        year_filter: String(row.year),
-        target_count: 1,
-        include_empty_weeks: this.includeEmptyWeeks,
-      })
       printAfterRender(this, 'portrait', subjectExportName(row.abbr, row.year, bounds.start, bounds.end))
     },
     exportAll() {
@@ -220,12 +213,6 @@ export default {
       }
 
       this.printTargets = [...this.rows]
-      captureEvent('bulk_planner_exported', {
-        export_scope: 'all_subjects',
-        year_filter: String(this.yearFilter),
-        target_count: this.rows.length,
-        include_empty_weeks: this.includeEmptyWeeks,
-      })
 
       const bounds = this.weekBounds(this.weeks)
       const scope =

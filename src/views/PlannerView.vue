@@ -395,7 +395,6 @@ import SubjectView from '../components/planner/SubjectView.vue'
 import WeekList from '../components/planner/WeekList.vue'
 import { useTheme } from '../composables/useTheme'
 import { useSpreadsheetStore } from '../stores/spreadsheet'
-import { captureEvent } from '../utils/analytics'
 import {
   DEFAULT_FILTERS,
   eventDetail,
@@ -700,11 +699,6 @@ export default {
       if (navigator.share) {
         try {
           await navigator.share(shareData)
-          captureEvent('planner_shared', {
-            share_method: 'native',
-            year: this.year,
-            course_count: this.courses.length,
-          })
           this.closeMenu()
           return
         } catch (error) {
@@ -717,11 +711,6 @@ export default {
 
       try {
         await navigator.clipboard.writeText(url)
-        captureEvent('planner_shared', {
-          share_method: 'clipboard',
-          year: this.year,
-          course_count: this.courses.length,
-        })
         this.flashShareState('copied')
       } catch {
         this.flashShareState('failed')
@@ -779,14 +768,6 @@ export default {
     runExport(settings) {
       this.exportOpen = false
       this.exportSettings = settings
-      captureEvent('planner_exported', {
-        year: this.year,
-        view: settings.view,
-        detail_level: settings.detailLevel,
-        week_count: settings.weeks.length,
-        course_count: this.courses.length,
-        active_filter_count: Object.values(settings.filters).filter(Boolean).length,
-      })
       printAfterRender(
         this,
         settings.view === 'month' ? 'landscape' : 'portrait',
