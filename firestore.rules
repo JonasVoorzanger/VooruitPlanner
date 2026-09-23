@@ -1,9 +1,116 @@
 rules_version = '2';
 
-// Alles dicht tot de echte regels er zijn (fase 1).
+// Datamodel: zie PLAN.md.
+//
+// Wie wat mag:
+// - iedereen: actieve scholen en hun planning lezen, feedback achterlaten;
+// - editors (docenten, custom token met { school, role: 'editor' }): de items
+//   van vakken van hun eigen school aanpassen;
+// - beheerders (members van een school): alles van hun eigen school, behalve
+//   de status en het adres van de school;
+// - super-admin (Jonas, claim superAdmin): alles.
+// Scholen aanmaken, goedkeuren en adressen (slugs) toekennen gebeurt via Cloud
+// Functions of de super-admin.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return signedIn() && request.auth.token.superAdmin == true;
+    }
+
+    function schoolPath(schoolId) {
+      return /databases/$(database)/documents/schools/$(schoolId);
+    }
+
+    function isMember(schoolId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/schools/$(schoolId)/members/$(request.auth.uid));
+    }
+
+    function isOwner(schoolId) {
+      return isMember(schoolId)
+        && get(/databases/$(database)/documents/schools/$(schoolId)/members/$(request.auth.uid)).data.role == 'owner';
+    }
+
+    function isAdmin(schoolId) {
+      return isSuperAdmin() || isMember(schoolId);
+    }
+
+    function isEditor(schoolId) {
+      return signedIn()
+        && request.auth.token.school == schoolId
+        && request.auth.token.role == 'editor';
+    }
+
+    function schoolIsActive(schoolId) {
+      return get(schoolPath(schoolId)).data.status == 'active';
+    }
+
+    function canReadSchool(schoolId) {
+      return schoolIsActive(schoolId) || isAdmin(schoolId);
+    }
+
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // Adres → school-id. Alleen de super-admin (of een Cloud Function) zet ze.
+    match /slugs/{slug} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    match /schools/{schoolId} {
+      allow read: if resource.data.status == 'active' || isAdmin(schoolId);
+      allow create, delete: if isSuperAdmin();
+      allow update: if isSuperAdmin()
+        || (isMember(schoolId) && !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['status', 'slug', 'requestedSlug']));
+
+      match /members/{uid} {
+        allow read: if isAdmin(schoolId);
+        allow write: if isSuperAdmin() || (isOwner(schoolId) && uid != request.auth.uid);
+      }
+
+      match /years/{schoolYear} {
+        allow read: if canReadSchool(schoolId);
+        allow write: if isAdmin(schoolId);
+
+        match /subjects/{abbr} {
+          allow read: if canReadSchool(schoolId);
+          allow create, delete: if isAdmin(schoolId);
+          allow update: if isAdmin(schoolId)
+            || (isEditor(schoolId)
+              && onlyChanges(['items', 'updatedAt', 'updatedBy'])
+              && request.resource.data.items is list
+              && request.resource.data.updatedAt == request.time
+              && (!('updatedBy' in request.resource.data)
+                || (request.resource.data.updatedBy is string
+                  && request.resource.data.updatedBy.size() <= 80)));
+        }
+      }
+    }
+
+    // Anonieme feedback van leerlingen: alleen toevoegen, niet teruglezen.
+    match /feedback/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['message', 'context', 'schoolId', 'createdAt'])
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 1000
+        && request.resource.data.context is map
+        && request.resource.data.context.size() <= 20
+        && request.resource.data.schoolId is string
+        && request.resource.data.createdAt == request.time;
+      allow read: if isSuperAdmin() || isMember(resource.data.schoolId);
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // Wachtwoord-hashes en dergelijke: alleen Cloud Functions (Admin SDK).
+    match /private/{schoolId} {
       allow read, write: if false;
     }
   }

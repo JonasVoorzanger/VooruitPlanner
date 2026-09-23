@@ -61,24 +61,24 @@
 </template>
 
 <script>
-import { useSpreadsheetStore } from '../stores/spreadsheet'
+import { usePlannerStore } from '../stores/planner'
 import { availableYears, parseDate, subjectYearRows } from '../utils/plannerModel'
 
 export default {
   name: 'EditIndexView',
   data() {
     return {
-      spreadsheetStore: useSpreadsheetStore(),
+      plannerStore: usePlannerStore(),
       search: '',
       yearFilter: 'all',
     }
   },
   computed: {
     events() {
-      return this.spreadsheetStore.events
+      return this.plannerStore.events
     },
     weeks() {
-      return [...this.spreadsheetStore.weeks].sort((a, b) => {
+      return [...this.plannerStore.weeks].sort((a, b) => {
         const startA = parseDate(a.start_date)
         const startB = parseDate(b.start_date)
         return (startA ? startA.getTime() : 0) - (startB ? startB.getTime() : 0)
@@ -88,7 +88,7 @@ export default {
       return availableYears(this.events)
     },
     allRows() {
-      return subjectYearRows(this.events, this.weeks, this.spreadsheetStore.subjects)
+      return subjectYearRows(this.events, this.weeks, this.plannerStore.subjects)
     },
     rows() {
       const term = String(this.search || '').trim().toLowerCase()

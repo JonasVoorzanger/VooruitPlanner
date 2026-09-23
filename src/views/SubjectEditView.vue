@@ -128,7 +128,7 @@
 
 <script>
 import ItemEditor from '../components/admin/ItemEditor.vue'
-import { useSpreadsheetStore } from '../stores/spreadsheet'
+import { usePlannerStore } from '../stores/planner'
 import { EVENT_COLUMNS, downloadCsv, toCsv } from '../utils/csv'
 import { formatWeekRange, isTestEvent, parseDate, typeMeta } from '../utils/plannerModel'
 
@@ -151,7 +151,7 @@ export default {
   },
   data() {
     return {
-      spreadsheetStore: useSpreadsheetStore(),
+      plannerStore: usePlannerStore(),
       rows: [],
       dirty: false,
       // Slepen: handleId zet draggable pas aan bij de greep, zodat de velden
@@ -171,11 +171,11 @@ export default {
       return String(this.$route.params.course || '').toUpperCase()
     },
     courseName() {
-      const subject = this.spreadsheetStore.subjects.find((item) => item.abbreviation === this.course)
+      const subject = this.plannerStore.subjects.find((item) => item.abbreviation === this.course)
       return subject ? `${subject.abbreviation} · ${subject.full_name}` : this.course
     },
     weeks() {
-      return [...this.spreadsheetStore.weeks].sort((a, b) => {
+      return [...this.plannerStore.weeks].sort((a, b) => {
         const startA = parseDate(a.start_date)
         const startB = parseDate(b.start_date)
         return (startA ? startA.getTime() : 0) - (startB ? startB.getTime() : 0)
@@ -243,7 +243,7 @@ export default {
   },
   methods: {
     loadRows() {
-      this.rows = this.spreadsheetStore.events
+      this.rows = this.plannerStore.events
         .filter(
           (event) =>
             event.subject_abbreviation === this.course &&

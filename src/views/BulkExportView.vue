@@ -115,7 +115,7 @@
 
 <script>
 import PrintDocument from '../components/planner/PrintDocument.vue'
-import { useSpreadsheetStore } from '../stores/spreadsheet'
+import { usePlannerStore } from '../stores/planner'
 import {
   availableYears,
   formatNumericDate,
@@ -133,7 +133,7 @@ export default {
   },
   data() {
     return {
-      spreadsheetStore: useSpreadsheetStore(),
+      plannerStore: usePlannerStore(),
       yearFilter: 'all',
       includeEmptyWeeks: true,
       printTargets: [],
@@ -141,17 +141,17 @@ export default {
   },
   computed: {
     events() {
-      return this.spreadsheetStore.events
+      return this.plannerStore.events
     },
     weeks() {
-      return [...this.spreadsheetStore.weeks].sort((a, b) => {
+      return [...this.plannerStore.weeks].sort((a, b) => {
         const startA = parseDate(a.start_date)
         const startB = parseDate(b.start_date)
         return (startA ? startA.getTime() : 0) - (startB ? startB.getTime() : 0)
       })
     },
     subjectsMap() {
-      return this.spreadsheetStore.subjects.reduce((map, subject) => {
+      return this.plannerStore.subjects.reduce((map, subject) => {
         map[subject.abbreviation] = subject.full_name
         return map
       }, {})
@@ -161,7 +161,7 @@ export default {
       return availableYears(this.events)
     },
     allRows() {
-      return subjectYearRows(this.events, this.weeks, this.spreadsheetStore.subjects)
+      return subjectYearRows(this.events, this.weeks, this.plannerStore.subjects)
     },
     rows() {
       if (this.yearFilter === 'all') {

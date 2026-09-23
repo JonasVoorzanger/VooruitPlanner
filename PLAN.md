@@ -52,7 +52,7 @@ data layer, login and admin screens are new. The app's interface stays in Dutch.
   `scripts/migration/schoolwide-events-2026-2027.csv`) into dev, to have real
   data to test with.
 
-## Data model (proposal; confirm in phase 1)
+## Data model
 Students should load a handful of documents per visit, not one document per
 event. So events are grouped by subject.
 
@@ -71,7 +71,8 @@ school id, and a separate lookup maps slugs to ids:
 - `schools/{schoolId}/years/{schoolYear}`: weeks[] (generated) and schoolWide[]
   (school-wide items).
 - `schools/{schoolId}/years/{schoolYear}/subjects/{abbr}`: fullName,
-  profiles { '4_CM': true, … }, items[] (the subject's events), updatedAt,
+  profiles { '4_CM': true, … }, required { '4': bool, … }, items[] (the
+  subject's events for every leerjaar, only filled fields), updatedAt,
   updatedBy (optional name). Editors write inside a transaction.
 - `feedback/{id}`: message, context, schoolId, createdAt. Anyone may create
   (with size limits); school admins read their own school's feedback, the
@@ -95,12 +96,15 @@ to prod without asking Jonas first.
 - Firebase config comes from `.env.*.local` files (see `.env.example`);
   firebase aliases `dev` and `prod`.
 
-### Phase 1: Data model and migration
-- Write firestore.rules and indexes for the model above.
-- Write a migration script that loads the existing data into the dev project as
-  school `hal`.
-- Rewrite the Pinia store to load from Firestore (school document, year
-  document, the selected subject documents). Keep the existing getters' shape.
+### Phase 1: Data model and migration (done, except loading dev)
+- firestore.rules for the model above, tested against the emulator
+  (`npm run test:rules`).
+- `npm run migrate` loads the existing data as school `hal` (emulator or dev;
+  it refuses prod).
+- The Pinia store (`stores/planner.js`) loads from Firestore: school, year and
+  the subjects a screen needs. A router guard loads them before a screen opens.
+- Still to do: run the migration on dev once gcloud's application-default
+  credentials have access to `vooruitplanner-development`.
 
 ### Phase 2: Choosing the school from the path
 - Switch to history mode; all school routes live under `/:school/`

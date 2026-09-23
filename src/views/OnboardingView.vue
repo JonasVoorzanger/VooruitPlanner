@@ -100,8 +100,8 @@
 
 <script>
 import IntroTour, { introHidden } from '../components/IntroTour.vue'
-import { availableProfileCourses, PROFILES } from '../data/profiles'
-import { useSpreadsheetStore } from '../stores/spreadsheet'
+import { availableProfileCourses } from '../data/profiles'
+import { usePlannerStore } from '../stores/planner'
 import { coursesWithItems, loadSelection, saveSelection } from '../utils/plannerModel'
 
 export default {
@@ -112,10 +112,9 @@ export default {
   data() {
     const selection = loadSelection()
     return {
-      spreadsheetStore: useSpreadsheetStore(),
+      plannerStore: usePlannerStore(),
       year: selection.year,
       courses: [...selection.courses],
-      profiles: PROFILES,
       showUnavailable: false,
       introOpen: false,
       // Wie geen profiel gebruikt, kiest zijn vakken zelf; stap 3 komt dan ook
@@ -124,8 +123,11 @@ export default {
     }
   },
   computed: {
+    profiles() {
+      return this.plannerStore.profiles
+    },
     subjects() {
-      return this.spreadsheetStore.subjects
+      return this.plannerStore.subjects
     },
     // Zonder gekozen leerjaar weten we nog niet welke planners er zijn; dan is
     // alles nog kiesbaar.
@@ -133,7 +135,7 @@ export default {
       if (!this.year) {
         return null
       }
-      return coursesWithItems(this.spreadsheetStore.events, this.year)
+      return coursesWithItems(this.plannerStore.events, this.year)
     },
     selectableSubjects() {
       return this.subjects.filter((subject) => this.isAvailable(subject.abbreviation))
@@ -201,9 +203,8 @@ export default {
     isAvailable(abbreviation) {
       return !this.availableCourses || this.availableCourses.has(abbreviation)
     },
-    // De kolommen 4_required en 5_required uit de `subjects` tab. Staat het vak
-    // er nog niet in — spreadsheet nog niet opnieuw ingeladen — dan tonen we het
-    // liever te veel dan te weinig.
+    // Of het vak verplicht is in dit leerjaar. Weten we dat niet, dan tonen we
+    // het liever te veel dan te weinig.
     isRequired(subject) {
       const flags = subject.required
       if (!flags || !(this.year in flags)) {

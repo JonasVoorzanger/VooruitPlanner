@@ -105,6 +105,23 @@ npm install
 npm run dev
 ```
 
+### Local, without a Firebase project
+
+Set `VITE_USE_EMULATOR=true` in `.env.development.local`, then:
+
+```bash
+firebase emulators:start --project demo-vooruitplanner   # terminal 1
+npm run migrate -- --emulator                             # loads school hal
+npm run dev                                               # terminal 2
+```
+
+### Tests and data
+
+```bash
+npm run test:rules                                        # Firestore rules, on the emulator
+npm run migrate -- --project vooruitplanner-development   # school hal on dev
+```
+
 ## Build
 
 ```bash

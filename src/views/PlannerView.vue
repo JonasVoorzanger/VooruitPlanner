@@ -394,7 +394,7 @@ import PrintDocument from '../components/planner/PrintDocument.vue'
 import SubjectView from '../components/planner/SubjectView.vue'
 import WeekList from '../components/planner/WeekList.vue'
 import { useTheme } from '../composables/useTheme'
-import { useSpreadsheetStore } from '../stores/spreadsheet'
+import { usePlannerStore } from '../stores/planner'
 import {
   DEFAULT_FILTERS,
   eventDetail,
@@ -433,7 +433,7 @@ export default {
     const storedView = localStorage.getItem('plannerViewMode')
 
     return {
-      spreadsheetStore: useSpreadsheetStore(),
+      plannerStore: usePlannerStore(),
       today,
       menuOpen: false,
       isNarrowScreen: false,
@@ -486,14 +486,14 @@ export default {
     weeks() {
       // Week numbers restart at 1 in January, so sort by date rather than
       // relying on spreadsheet order.
-      return [...this.spreadsheetStore.weeks].sort((a, b) => {
+      return [...this.plannerStore.weeks].sort((a, b) => {
         const startA = parseDate(a.start_date)
         const startB = parseDate(b.start_date)
         return (startA ? startA.getTime() : 0) - (startB ? startB.getTime() : 0)
       })
     },
     events() {
-      return this.spreadsheetStore.events
+      return this.plannerStore.events
     },
     visibleEvents() {
       return filterEventsByCategory(this.events, this.filters)
@@ -516,7 +516,7 @@ export default {
       return filterEventsByCategory(this.events, this.exportSettings.filters)
     },
     subjectsMap() {
-      return this.spreadsheetStore.subjects.reduce((map, subject) => {
+      return this.plannerStore.subjects.reduce((map, subject) => {
         map[subject.abbreviation] = subject.full_name
         return map
       }, {})
