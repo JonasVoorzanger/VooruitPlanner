@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "periodeplanner"
+    "default": "vooruitplanner-development",
+    "dev": "vooruitplanner-development",
+    "prod": "vooruitplanner"
   }
 }

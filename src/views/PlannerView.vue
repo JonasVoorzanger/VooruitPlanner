@@ -306,7 +306,7 @@
 
       <!-- <footer class="footer">
         <div class="footer-row">
-          <div class="footer-brand">PeriodePlanner</div>
+          <div class="footer-brand">VooruitPlanner</div>
           <button class="footer-link" :title="linkCopied ? 'Gekopieerd' : 'Kopieer je link'" @click="copyLink">
             <span class="footer-link-label pp-mono">jouw link</span>
             <span class="footer-link-url pp-mono">{{ shareUrl }}</span>
@@ -692,7 +692,7 @@ export default {
     async share() {
       const url = window.location.href
       const shareData = {
-        title: 'PeriodePlanner',
+        title: 'VooruitPlanner',
         text: `Planner voor klas ${this.year}: ${this.courses.join(', ')}`,
         url,
       }

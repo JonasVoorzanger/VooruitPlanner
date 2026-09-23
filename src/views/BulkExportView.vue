@@ -85,7 +85,7 @@
               </tr>
               <tr v-if="!rows.length">
                 <td colspan="6" class="text-medium-emphasis py-6 text-center">
-                  Geen vakken met items gevonden. Laad eerst de spreadsheet in met <code>npm run load-data</code>.
+                  Geen vakken met items gevonden.
                 </td>
               </tr>
             </tbody>

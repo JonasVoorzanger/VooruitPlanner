@@ -1,7 +1,7 @@
 <template>
   <v-app v-if="isAdminRoute" class="pp-screen-only">
     <v-app-bar v-if="showNavigation" color="primary" density="comfortable">
-      <v-app-bar-title>PeriodePlanner</v-app-bar-title>
+      <v-app-bar-title>VooruitPlanner</v-app-bar-title>
       <template #append>
         <v-btn
           v-for="item in navigationItems"
@@ -31,16 +31,14 @@ export default {
     return {
       navigationItems: [
         { title: 'Planner', to: '/', icon: 'mdi-calendar-month-outline' },
-        { title: 'Upload', to: '/upload', icon: 'mdi-file-upload-outline' },
         { title: 'Bulkexport', to: '/export', icon: 'mdi-file-export-outline' },
         { title: 'Bewerklijst', to: '/bewerklijst', icon: 'mdi-playlist-edit' },
-        { title: 'Settings', to: '/settings', icon: 'mdi-cog-outline' },
       ],
     }
   },
   computed: {
     isAdminRoute() {
-      return ['upload', 'settings', 'bulkExport', 'subjectEdit', 'editIndex'].includes(this.$route.name)
+      return ['bulkExport', 'subjectEdit', 'editIndex'].includes(this.$route.name)
     },
     // De bewerkschermen zijn werkschermen voor docenten; die houden de
     // beheerbalk uit beeld.

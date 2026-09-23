@@ -154,7 +154,7 @@ body {
   width: 100%;
 }
 
-/* Markdown rendering (event descriptions, upload flow) */
+/* Markdown rendering (event descriptions) */
 .markdown-content p:first-child {
   margin-top: 0;
 }

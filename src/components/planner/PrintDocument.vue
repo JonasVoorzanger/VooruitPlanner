@@ -3,7 +3,7 @@
     <header class="doc-head">
       <div class="doc-title">
         <span class="logo pp-mono">P</span>
-        <span>Periodeplanner · Klas {{ year }}</span>
+        <span>VooruitPlanner · Klas {{ year }}</span>
       </div>
       <div class="doc-meta">
         <span class="pp-mono">{{ metaCourses }}</span>

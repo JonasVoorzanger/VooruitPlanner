@@ -80,7 +80,7 @@ const MOBILE_QUERY = '(max-width: 600px)'
 
 const STEPS = [
   {
-    title: 'Welkom bij de HAL PeriodePlanner',
+    title: 'Welkom bij de VooruitPlanner',
     text: 'Stel eenmalig je leerjaar en je vakken in. Daarna opent de planner altijd op jouw eigen link, met alleen de vakken die jij volgt.',
     image: '/intro/stap-1.png',
     mobileImage: '/intro/stap-1-mobile.png',

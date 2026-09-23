@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import bundledData from '../data/spreadsheet.json'
+import bundledData from '../../scripts/migration/spreadsheet.json'
 
 function parseDate(value) {
   if (!value) {

@@ -1,13 +1,10 @@
 // Profielen voor de snelkeuze op het onboardingscherm.
 //
-// ── Hier pas je de vakken aan ────────────────────────────────────────────────
-// Niet hier, maar in de spreadsheet. De `subjects` tab heeft per profiel en
-// leerjaar een kolom met een vinkje: 4_CM, 5_CM, 4_EM, 5_EM, 4_NG, 5_NG, 4_NT
-// en 5_NT. Staat het vinkje aan (TRUE), dan hoort het vak bij die snelkeuze.
-// Draai `npm run load-data` om de wijzigingen op te halen.
+// Elk vak heeft per profiel en leerjaar een vinkje: 4_CM, 5_CM, 4_EM, 5_EM,
+// 4_NG, 5_NG, 4_NT en 5_NT. Staat het vinkje aan, dan hoort het vak bij die
+// snelkeuze.
 
-// Kolomnamen in de `subjects` tab. Houd dit gelijk aan PROFILE_COLUMNS in
-// scripts/load-data.js.
+// De sleutels van die vinkjes.
 export const PROFILE_COLUMNS = ['4_CM', '5_CM', '4_EM', '5_EM', '4_NG', '5_NG', '4_NT', '5_NT']
 
 export const PROFILES = [
@@ -25,7 +22,7 @@ export function profileColumn(profile, year) {
   return `${year}_${profile.key}`
 }
 
-// De vakken die in de spreadsheet zijn aangevinkt voor dit profiel en leerjaar.
+// De vakken die zijn aangevinkt voor dit profiel en leerjaar.
 export function availableProfileCourses(profile, year, subjects = []) {
   const column = profileColumn(profile, year)
   if (!column) {

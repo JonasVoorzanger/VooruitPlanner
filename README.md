@@ -1,28 +1,29 @@
-# PeriodePlanner
+# VooruitPlanner
 
-Vue 3 + Vuetify web application for planning school periods from a public Google Spreadsheet.
+A period planner for secondary schools, at [vooruitplanner.nl](https://vooruitplanner.nl).
+Every school gets its own page at `vooruitplanner.nl/<school>` (for example
+`/hal`). Students pick their leerjaar and vakken there and get a planner with
+tests, planning and school activities per week. Teachers edit their subject's
+planning with a shared school password, and a small team of admins per school
+manages the rest. The interface is in Dutch.
+
+See [PLAN.md](PLAN.md) for the build plan and the decisions behind it.
 
 ## Features
 
-- Onboarding flow to pick a leerjaar and vakken, producing a shareable planner link (`/#/jaar/3/NL.EN.WI`)
+- Onboarding flow to pick a leerjaar and vakken, producing a shareable planner link
 - Profile shortcuts (C&M, E&M, N&G, N&T) that fill the vakkenpakket in one click
-- Three views over the same data: **Lijst** (scroll the whole year, weeks collapse and expand), **Maand** (one month at a glance, nothing to unfold) and **Per vak** (one subject, every week, all detail visible)
-- Lijst and Maand share the same split: vakken per week on the left, the days of that week stacked on the right
-- Per vak shows weeks without items for that subject as a minimal grey divider, so gaps stay visible
+- Three views over the same data: **Lijst** (scroll the whole year, weeks collapse and expand), **Maand** (one month at a glance) and **Per vak** (one subject, every week, all detail visible)
 - Compact/Uitgebreid detail levels, a Filter menu (Toetsen / Planning / Overig) and a light/dark theme toggle
-- A4 export of the list or month view, with per-week selection
+- A4 export of the list, month or subject view, with per-week selection
 - Event detail dialog with type, weging and Markdown description
-- Google Sheets CSV loading for weeks, events (school-wide, tests, planning activities) and subjects
-- Admin upload flow for PDF/DOCX to Claude-powered CSV conversion
-- Admin bulk export (`/#/export`): one PDF per vak, or every vak in one document, named `Planner <VAK> klas <jaar> <start>-<eind>` for sending to teachers to check
-- Teacher entry point (`/#/bewerklijst`): search and pick a vak to edit, no admin chrome
-- Admin per-vak editor (`/#/bewerk/<jaar>/<VAK>`): edit and add items week by week and download the result as CSV for the `events` tab — it never writes to the spreadsheet itself
-- Settings stored in localStorage for spreadsheet and Claude API configuration
-- Installable on a phone's home screen (web app manifest + calendar icon), a **Delen** button using the device share sheet, and Open Graph tags for link previews
+- Bulk export (`/export`): one PDF per vak, or every vak in one document, for sending to teachers to check
+- Teacher entry point (`/bewerklijst`) and per-vak editor (`/bewerk/<jaar>/<VAK>`)
+- Installable on a phone's home screen, a **Delen** button and Open Graph tags for link previews
 
 ## Intro tour
 
-First-time visitors to the main page (`/#/`) get a five-step walkthrough. The
+First-time visitors to the main page (`/`) get a five-step walkthrough. The
 step images are placeholders in [`public/intro/`](public/intro/) — replace
 `stap-1.png` … `stap-5.png` with real screenshots at the same names (960×540, 16:9).
 Text and order live in `STEPS` in
@@ -34,21 +35,6 @@ backdrop clicks — you walk it through and close it on the last step. Reopened
 from the **?** button it is dismissible as usual. The **?** button next to the theme toggle reopens it any time, and
 the last step offers "Deze uitleg niet meer tonen" (stored as
 `plannerIntroHidden`).
-
-## Profiles
-
-The quick-select buttons under *Profiel* on the onboarding screen are filled from
-the spreadsheet, not from code. The `subjects` tab has one checkbox column per
-profile and leerjaar:
-
-| abbreviation | full_name | 4_CM | 5_CM | 4_EM | 5_EM | 4_NG | 5_NG | 4_NT | 5_NT |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| AK | Aardrijkskunde | TRUE | TRUE | TRUE | TRUE | FALSE | FALSE | FALSE | FALSE |
-
-Tick a box and the vak joins that profile's quick-select; run `npm run load-data`
-to pull the change into [`src/data/spreadsheet.json`](src/data/spreadsheet.json).
-[`src/data/profiles.js`](src/data/profiles.js) only holds the four profile labels
-and reads the columns — no vakkenlijsten live in code.
 
 ## Export to A4
 
@@ -66,51 +52,9 @@ size is written into a `@page` rule right before printing (see
 [`PrintDocument.vue`](src/components/planner/PrintDocument.vue) and always uses
 the light palette, so a dark-themed planner does not print as a black page.
 
-## School-wide events
+## Item fields
 
-[`schoolwide-events-2026-2027.csv`](schoolwide-events-2026-2027.csv) holds the
-school-wide items from the jaaragenda that matter to leerjaar 4 and 5 —
-vakanties, proefwerkweken, SE-periodes, rapportmomenten, ouderavonden and
-schoolbrede activiteiten. The columns match the `events` tab exactly, so the rows
-can be pasted straight into the spreadsheet.
-
-## Setup
-
-### Connecting your Google Spreadsheet
-
-The app accepts two URL formats — paste either one into the spreadsheet URL field in the app settings.
-
-#### Option A — Publish to the web (recommended)
-
-1. Open your spreadsheet in Google Sheets.
-2. Go to **File → Share → Publish to the web**.
-3. Under *Link*, select **Entire document** and **Comma-separated values (.csv)**, then click **Publish**.
-4. Copy the URL (it looks like `https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?output=csv`).
-5. Paste it into the spreadsheet URL field in the app.
-
-#### Option B — Share as "Anyone with the link"
-
-1. Open your spreadsheet in Google Sheets.
-2. Click **Share** (top right) → **Change to anyone with the link** → set role to **Viewer** → click **Done**.
-3. Copy the URL from your browser's address bar (it looks like `https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit…`).
-4. Paste it into the spreadsheet URL field in the app.
-
-## Google Spreadsheet Structure
-
-The spreadsheet must be public (see Setup above) and contain the following 3 tabs:
-
-### `weeks`
-
-| Column | Description |
-| ------ | ----------- |
-| `week_number` | Numeric week identifier (e.g. `1`, `2`, …) |
-| `start_date` | Start date of the week (`YYYY-MM-DD` preferred) |
-| `end_date` | End date of the week (`YYYY-MM-DD` preferred) |
-| `label` | Display label shown in the planner (e.g. `Week 1`) |
-
-### `events`
-
-All items — school-wide events, holidays, subject activities, and tests — live in this single tab. The `type` column determines how an item is displayed and where it appears.
+Every planner item (school-wide event, holiday, subject activity or test) has these fields. The `type` field determines how an item is displayed and where it appears.
 
 **School-wide types** (appear in the top section of each week card, matched to weeks via `date`/`end_date`):
 
@@ -149,24 +93,16 @@ shown or hidden independently of Toetsen and Planning.
 | `weight` | Grading weight for test items (e.g. `1`, `2`, or `formatief`) |
 | `year_1` … `year_6` | Boolean flags for school-wide items — mark with `1`, `true`, `yes`, or `x` |
 
-### `subjects`
-
-| Column | Description |
-| ------ | ----------- |
-| `abbreviation` | Short abbreviation, e.g. `NL` (stored uppercased) |
-| `full_name` | Full subject name, e.g. `Nederlands` |
-| `4_CM` … `5_NT` | Checkbox per profile and leerjaar — `TRUE` puts the vak in that profile's quick-select |
-
 ## Development
+
+Firebase projects: `vooruitplanner-development` (alias `dev`) and
+`vooruitplanner` (alias `prod`). Copy `.env.example` to
+`.env.development.local` and `.env.production.local` and fill in the web app
+config of each project.
 
 ```bash
 npm install
 npm run dev
-```
-
-## Load data
-```bash
-npm run load-data
 ```
 
 ## Build

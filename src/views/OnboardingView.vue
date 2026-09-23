@@ -5,7 +5,7 @@
     <div class="panel">
       <div class="brand">
         <div class="logo pp-mono">P</div>
-        <div class="brand-name">HAL PeriodePlanner</div>
+        <div class="brand-name">VooruitPlanner</div>
       </div>
 
       <!-- Stap voor stap: de volgende stap verschijnt pas als de vorige klaar is. -->

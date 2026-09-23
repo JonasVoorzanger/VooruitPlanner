@@ -1,0 +1,157 @@
+# VooruitPlanner — build plan
+
+## What this is
+VooruitPlanner (vooruitplanner.nl) turns PeriodePlanner, a single-school period
+planner, into a service that any school can use. This repo started as a copy of
+PeriodePlanner, with its git history. The student-facing planner views stay; the
+data layer, login and admin screens are new. The app's interface stays in Dutch.
+
+## Decisions already made (don't reopen these)
+- **No spreadsheets.** All data lives in Firestore. Schools set themselves up;
+  the owner (Jonas) should have as little management work as possible.
+- **One path per school**: `vooruitplanner.nl/<slug>/…`, e.g.
+  `vooruitplanner.nl/hal`. Every path after the slug is the same for all
+  schools (`/hal/jaar/4/NL.EN.WI`, `/hal/bewerklijst`). The app gets the school
+  from the first path segment. (This replaces the earlier one-subdomain-per-school
+  plan.)
+- **The root** `vooruitplanner.nl/` asks the visitor to search for their school.
+  It also links to school sign-up and admin login.
+- **Three kinds of user:**
+  - Students: no account, no personal data.
+  - Admins (a small team per school): personal login via email magic link,
+    Microsoft or Google. One person signs the school up and becomes its owner;
+    the owner invites the other admins by email.
+  - Editors (teachers): one shared password per school, which admins can change.
+    A Cloud Function checks the password (stored hashed, never readable by
+    clients) and returns a Firebase custom token with the claims
+    `{ school: <schoolId>, role: 'editor' }`. Firestore rules check those claims.
+    Optional later: one password per subject.
+- **Approval gate:** a new school stays `pending` until Jonas approves it, or it
+  is approved automatically when the owner's email is on a school domain.
+- **Slugs of pending schools:** while a school is pending it runs on a temporary
+  slug, and the onboarding says clearly that this is not its final address. The
+  slug the school asked for becomes its address once it is approved.
+- **Store as little personal data (AVG/GDPR) as possible.** The only personal
+  data is admin email addresses, plus an optional free-text editor name on edits.
+- **Firebase:** `vooruitplanner-development` (alias `dev`) and `vooruitplanner`
+  (alias `prod`). Firestore region `europe-west4`. They replace the old
+  `periodeplanner` project.
+- **The Claude import runs server-side** in a Cloud Function, using Jonas's API
+  key and a monthly limit per school. The browser never sees the key.
+- **Jonas's school** has the slug `hal`. The migration loads its existing data
+  (`scripts/migration/spreadsheet.json` and
+  `scripts/migration/schoolwide-events-2026-2027.csv`) into dev, to have real
+  data to test with.
+
+## Data model (proposal; confirm in phase 1)
+Students should load a handful of documents per visit, not one document per
+event. So events are grouped by subject.
+
+Because a school's slug changes on approval, documents are keyed by a stable
+school id, and a separate lookup maps slugs to ids:
+
+- `slugs/{slug}`: schoolId. Public read. Created for the temporary slug at
+  sign-up, and for the requested slug on approval (the temporary one is then
+  removed).
+- `schools/{schoolId}`: slug, requestedSlug, name, color, logoUrl, status
+  (pending | active), region (noord | midden | zuid), levels and years offered,
+  profiles [{ key, label, name }], currentSchoolYear. Public read if the school
+  is active.
+- `schools/{schoolId}/members/{uid}`: role (owner | admin), email. Readable by
+  admins of that school.
+- `schools/{schoolId}/years/{schoolYear}`: weeks[] (generated) and schoolWide[]
+  (school-wide items).
+- `schools/{schoolId}/years/{schoolYear}/subjects/{abbr}`: fullName,
+  profiles { '4_CM': true, … }, items[] (the subject's events), updatedAt,
+  updatedBy (optional name). Editors write inside a transaction.
+- `private/{schoolId}`: editorPasswordHash and similar. No client access; Cloud
+  Functions only.
+
+Keep the item field names close to today's event fields, so the planner
+components and utils/plannerModel.js need few changes.
+
+## Phases
+Commit per phase. Test security rules against the Firebase emulator. Never deploy
+to prod without asking Jonas first.
+
+### Phase 0: Trim and rebrand (done)
+- Removed the spreadsheet loader, the upload and settings screens, the old
+  PeriodePlanner Firebase config and the unused files.
+- Moved the existing data to `scripts/migration/`.
+- Renamed to VooruitPlanner everywhere.
+- Firebase config comes from `.env.*.local` files (see `.env.example`);
+  firebase aliases `dev` and `prod`.
+
+### Phase 1: Data model and migration
+- Write firestore.rules and indexes for the model above.
+- Write a migration script that loads the existing data into the dev project as
+  school `hal`.
+- Rewrite the Pinia store to load from Firestore (school document, year
+  document, the selected subject documents). Keep the existing getters' shape.
+
+### Phase 2: Choosing the school from the path
+- Switch to history mode; all school routes live under `/:school/`
+  (`/:school/jaar/:year/:courses`, `/:school/bewerklijst`,
+  `/:school/bewerk/:year/:course`).
+- `useSchool()` resolves the slug via `slugs/{slug}`.
+- `/` → school search. Unknown slug → a friendly "not found" page. A pending
+  school is only visible to its own admins, with a banner that it is not live yet.
+- Reserved slugs: every top-level route the app uses (e.g. beheer, admin,
+  aanmelden, login, api, static, assets, privacy).
+- The school's name, colour and logo drive the theme and the title.
+
+### Phase 3: Editor access
+- Cloud Function `editorLogin(schoolId, password)`: rate-limited; returns a
+  custom token with the claims.
+- Password screen in front of the bewerklijst and bewerk routes; the session
+  stays signed in.
+- SubjectEditView saves directly to Firestore instead of offering a CSV
+  download, with an optional "your name" field.
+- Rules: editors may write only their own school's subject documents.
+
+### Phase 4: Admin area
+- Sign-up: email link, Microsoft or Google. Create the school (requested slug,
+  name, region, first day of the school year) with status pending and a
+  temporary slug, then approval.
+- Setup wizard:
+  - generate the weeks from the start date;
+  - pre-fill the vacations for the chosen region (a bundled table per school
+    year to start with);
+  - pick subjects from Dutch presets;
+  - pick profiles from presets (C&M, E&M, N&G, N&T);
+  - set the editor password.
+- Admin screens: invite and remove admins, change the editor password, edit
+  school-wide items, manage subjects and profiles, bulk PDF export (reuse
+  BulkExportView).
+- An approval screen for Jonas (super-admin claim). Approving moves the school
+  to its requested slug.
+
+### Phase 5: Server-side Claude import
+- Cloud Function: upload a PDF, DOCX or XLSX planner and get back proposed items
+  for a subject, which the editor reviews before saving. Port the logic from
+  .claude/skills/planner-import.
+- Monthly usage limit per school; the API key is stored in Secret Manager.
+
+### Phase 6: Hosting and domain
+- Deploy the front end to vooruitplanner.nl, with a rewrite of every path to
+  index.html.
+- Add vooruitplanner.nl to Firebase Auth's allowed domains.
+- Set a budget alert on the prod project.
+
+### Phase 7: Privacy and launch
+- PostHog: EU host, no person profiles, no IP capture; or remove it.
+- Privacy statement, and a data processing agreement template based on the
+  Privacyconvenant Onderwijs model. Mention that Firebase Auth processes data
+  partly in the US (covered by the EU-US Data Privacy Framework).
+- Move Jonas's school to prod, point the old PeriodePlanner domain to
+  vooruitplanner.nl/hal, then archive the PeriodePlanner repo.
+
+## Open questions (ask Jonas when they come up)
+- Hosting: the move to paths removes the need for wildcard domains, which was
+  the only reason for Cloudflare. Firebase Hosting (already in firebase.json)
+  would keep everything in one place.
+- Do schools need havo/vwo/mavo as separate levels next to leerjaar?
+- Where the vacation dates come from (a bundled table or rijksoverheid data).
+- Does the planner need to show several school years at once, or only the
+  current one plus an archive?
+- What a temporary slug looks like (e.g. `aanvraag-7f3k2`).

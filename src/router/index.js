@@ -1,8 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import OnboardingView from '../views/OnboardingView.vue'
 import PlannerView from '../views/PlannerView.vue'
-import UploadView from '../views/UploadView.vue'
-import SettingsView from '../views/SettingsView.vue'
 import BulkExportView from '../views/BulkExportView.vue'
 import SubjectEditView from '../views/SubjectEditView.vue'
 import EditIndexView from '../views/EditIndexView.vue'
@@ -19,16 +17,6 @@ const router = createRouter({
       path: '/jaar/:year/:courses',
       name: 'planner',
       component: PlannerView,
-    },
-    {
-      path: '/upload',
-      name: 'upload',
-      component: UploadView,
-    },
-    {
-      path: '/settings',
-      name: 'settings',
-      component: SettingsView,
     },
     {
       path: '/export',
