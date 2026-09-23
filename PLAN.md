@@ -6,6 +6,77 @@ planner, into a service that any school can use. This repo started as a copy of
 PeriodePlanner, with its git history. The student-facing planner views stay; the
 data layer, login and admin screens are new. The app's interface stays in Dutch.
 
+## Where we are (handoff, 2026-09-23)
+
+Phases 0 and 1 are done; phase 2 is next. Everything is committed on `main`.
+
+**Next steps, in order:**
+
+1. Load school `hal` into dev (blocked on Jonas, see below):
+   `npm run migrate -- --project vooruitplanner-development`.
+2. Phase 2. Start by replacing the hard-coded `SCHOOL_SLUG = 'hal'` in
+   `src/router/index.js` with the first path segment.
+
+**Waiting on Jonas:**
+
+- Access for the migration. It uses gcloud application-default credentials,
+  currently `jonas@leerlevels.nl`, which has no access to
+  `vooruitplanner-development`. Either give that account the role "Cloud
+  Datastore User" on the dev project, or run
+  `gcloud auth application-default login` with the Gmail account.
+- The full name of school `hal` (the migration sets `name: 'HAL'`) and its
+  region (noord | midden | zuid; now `null`). Both are in
+  `scripts/migration/migrate-hal.js`.
+
+**State of the Firebase projects:**
+
+- `vooruitplanner-development`: Firestore `(default)` in europe-west4, rules
+  from `firestore.rules` deployed, one web app ("VooruitPlanner",
+  `1:892654467731:web:1776b967b3f57db6316b66`), hosting site exists. No data
+  yet.
+- `vooruitplanner` (prod): hosting site only. No database, no web app, nothing
+  deployed. Don't touch it without asking Jonas.
+
+**Setting up a fresh machine or remote session:**
+
+- `npm install` (and `npm --prefix functions install` once functions exist).
+- `.env.development.local` is not in git. Either get the values with
+  `firebase apps:sdkconfig WEB 1:892654467731:web:1776b967b3f57db6316b66 --project dev`
+  (needs a Firebase login with access), or set `VITE_USE_EMULATOR=true` and work
+  fully locally. See `.env.example` and the README.
+- Local run without Firebase access: `firebase emulators:start --project
+  demo-vooruitplanner`, then `npm run migrate -- --emulator`, then `npm run dev`.
+  The emulator needs Java.
+- Checks before committing: `npm run build` and `npm run test:rules`.
+
+**Map of the code:**
+
+- `src/firebase.js`: Firebase app and Firestore, emulator switch.
+- `src/stores/planner.js`: loads school → year → subjects. `loadSchool(slug)`
+  already falls back from `slugs/{slug}` to `schools/{id}` for pending schools.
+  The getters `events`, `subjects`, `weeks` and `profiles` keep the shape the
+  views had with the old spreadsheet store.
+- `src/router/index.js`: the guard that loads data before each screen, and
+  which subjects each route needs.
+- `src/App.vue`: "not found" and error messages based on `store.status`.
+- `firestore.rules` + `tests/firestore.rules.test.js`: rules and their tests.
+- `scripts/migration/`: the migration script and its source data.
+- `functions/`: empty scaffold from `firebase init` (JavaScript, eslint google
+  config); first real use is phase 3.
+
+**Loose ends to pick up along the way:**
+
+- EditIndexView and SubjectEditView still tell teachers they download a CSV;
+  phase 3 replaces this with saving to Firestore.
+- The "Editors write inside a transaction" part of the data model is not built
+  yet (phase 3).
+- The emulator config in `firebase.json` also lists auth and functions ports;
+  only Firestore is used so far.
+
+**Conventions:** the interface and code comments are in Dutch; this plan and
+commit messages are in English. Commit per phase. Never deploy to prod
+without asking Jonas.
+
 ## Decisions already made (don't reopen these)
 - **No spreadsheets.** All data lives in Firestore. Schools set themselves up;
   the owner (Jonas) should have as little management work as possible.
