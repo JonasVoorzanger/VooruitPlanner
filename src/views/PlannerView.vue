@@ -10,7 +10,7 @@
 
       <header class="topbar">
         <div class="brand">
-          <button class="back-btn" @click="$router.push('/')">
+          <button class="back-btn" @click="$router.push(plannerStore.basePath)">
             <span class="mdi mdi-arrow-left" aria-hidden="true"></span>
             <span>Wijzig vakken</span>
           </button>
@@ -164,7 +164,7 @@
               <span class="mdi mdi-help-circle-outline" aria-hidden="true"></span>
             </button>
             <button class="icon-btn" title="Thema" @click="toggleTheme">{{ themeIcon }}</button>
-            <button class="text-btn" @click="$router.push('/'); closeMenu()">Wijzig</button>
+            <button class="text-btn" @click="$router.push(plannerStore.basePath); closeMenu()">Wijzig</button>
           </div>
 
           <div class="mobile-controls">
@@ -588,7 +588,7 @@ export default {
     },
     // De eigen link van deze leerling, zoals hij ook te delen is.
     shareUrl() {
-      return `${window.location.host}/#/jaar/${this.year}/${this.courses.join('.')}`
+      return `${window.location.host}${this.plannerStore.basePath}/jaar/${this.year}/${this.courses.join('.')}`
     },
     shareTitle() {
       return 'Deel je eigen planner-link — of zet de planner op je beginscherm'
@@ -643,11 +643,11 @@ export default {
       if (this.$route.name !== 'planner') {
         return
       }
-      if (!Number.isInteger(this.year) || this.year < 4 || this.year > 5 || !this.courses.length) {
-        this.$router.replace('/')
+      if (!this.plannerStore.years.includes(this.year) || !this.courses.length) {
+        this.$router.replace(this.plannerStore.basePath)
         return
       }
-      saveSelection({ year: this.year, courses: this.courses })
+      saveSelection(this.plannerStore.schoolId, { year: this.year, courses: this.courses })
       this.validateSubjectCourse()
     },
     // Valt terug op het eerste vak zodra het bewaarde vak niet meer gekozen is.
@@ -691,7 +691,7 @@ export default {
     async share() {
       const url = window.location.href
       const shareData = {
-        title: 'VooruitPlanner',
+        title: `${this.plannerStore.school.name} · VooruitPlanner`,
         text: `Planner voor klas ${this.year}: ${this.courses.join(', ')}`,
         url,
       }

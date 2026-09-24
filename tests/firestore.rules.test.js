@@ -1,5 +1,6 @@
 // Tests voor firestore.rules. Draai met `npm run test:rules`; dat start de
 // Firestore-emulator onder een demo-project, zodat er niets echts geraakt wordt.
+import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { after, before, beforeEach, describe, test } from 'node:test'
 import {
@@ -7,7 +8,19 @@ import {
   assertSucceeds,
   initializeTestEnvironment,
 } from '@firebase/rules-unit-testing'
-import { doc, getDoc, setDoc, updateDoc, addDoc, collection, serverTimestamp, deleteDoc } from 'firebase/firestore'
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 
 const YEAR = '2026-2027'
 let env
@@ -59,6 +72,14 @@ describe('leerlingen (niet ingelogd)', () => {
   test('lezen geen school die nog niet is goedgekeurd', async () => {
     await assertFails(getDoc(doc(anon(), 'schools/school-p')))
     await assertFails(getDoc(doc(anon(), `schools/school-p/years/${YEAR}/subjects/NL`)))
+  })
+
+  test('zoeken tussen de actieve scholen, niet tussen alle scholen', async () => {
+    const schools = collection(anon(), 'schools')
+    const active = await assertSucceeds(getDocs(query(schools, where('status', '==', 'active'))))
+    assert.deepEqual(active.docs.map((school) => school.id), ['school-a'])
+    await assertFails(getDocs(schools))
+    await assertFails(getDocs(query(schools, where('status', '==', 'pending'))))
   })
 
   test('lezen geen beheerders, privégegevens of feedback', async () => {

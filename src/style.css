@@ -53,6 +53,26 @@
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
+/* De kleur van de school (App.vue zet --school-color) wordt het accent. We
+   nemen alleen de tint en een begrensde verzadiging over; de helderheid blijft
+   die van het standaardaccent, zodat tekst erop en eromheen leesbaar blijft,
+   welke kleur een school ook kiest. */
+@supports (color: oklch(from red l c h)) {
+  :root[data-school-color] {
+    --accent: oklch(from var(--school-color) 0.52 min(c, 0.16) h);
+    --accent-hover: oklch(from var(--school-color) 0.45 min(c, 0.16) h);
+    --accent-soft: oklch(from var(--school-color) 0.958 min(c, 0.024) h);
+    --accent-border: oklch(from var(--school-color) 0.83 min(c, 0.06) h);
+  }
+
+  :root[data-school-color][data-theme='dark'] {
+    --accent: oklch(from var(--school-color) 0.72 min(c, 0.13) h);
+    --accent-hover: oklch(from var(--school-color) 0.79 min(c, 0.13) h);
+    --accent-soft: oklch(from var(--school-color) 0.3 min(c, 0.05) h);
+    --accent-border: oklch(from var(--school-color) 0.44 min(c, 0.08) h);
+  }
+}
+
 * {
   box-sizing: border-box;
 }

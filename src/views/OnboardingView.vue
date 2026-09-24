@@ -4,8 +4,12 @@
 
     <div class="panel">
       <div class="brand">
-        <div class="logo pp-mono">P</div>
-        <div class="brand-name">VooruitPlanner</div>
+        <img v-if="school.logoUrl" class="logo-image" :src="school.logoUrl" alt="" />
+        <div v-else class="logo pp-mono">{{ schoolInitial }}</div>
+        <div>
+          <div class="brand-name">{{ school.name }}</div>
+          <router-link class="brand-sub" to="/">VooruitPlanner · andere school</router-link>
+        </div>
       </div>
 
       <!-- Stap voor stap: de volgende stap verschijnt pas als de vorige klaar is. -->
@@ -13,7 +17,7 @@
         <h2 class="step-head"><span class="step-number">1</span> Kies je leerjaar</h2>
         <div class="chip-row years">
           <button
-            v-for="option in [4, 5]"
+            v-for="option in plannerStore.years"
             :key="option"
             class="year-chip"
             :class="{ active: year === option }"
@@ -110,9 +114,10 @@ export default {
     IntroTour,
   },
   data() {
-    const selection = loadSelection()
+    const plannerStore = usePlannerStore()
+    const selection = loadSelection(plannerStore.schoolId, plannerStore.years)
     return {
-      plannerStore: usePlannerStore(),
+      plannerStore,
       year: selection.year,
       courses: [...selection.courses],
       showUnavailable: false,
@@ -123,6 +128,12 @@ export default {
     }
   },
   computed: {
+    school() {
+      return this.plannerStore.school
+    },
+    schoolInitial() {
+      return String(this.school.name || '?').trim().charAt(0).toUpperCase()
+    },
     profiles() {
       return this.plannerStore.profiles
     },
@@ -170,20 +181,21 @@ export default {
       return this.selectableSubjects.length > 0 && this.courses.length === this.selectableSubjects.length
     },
     canConfirm() {
-      return [4, 5].includes(this.year) && this.courses.length > 0
+      return this.plannerStore.years.includes(this.year) && this.courses.length > 0
     },
     plannerPath() {
       if (!this.canConfirm) {
         return ''
       }
-      return `/jaar/${this.year}/${this.courses.join('.')}`
+      return `${this.plannerStore.basePath}/jaar/${this.year}/${this.courses.join('.')}`
     },
   },
-  // De uitleg hoort alleen bij het openen van de site zelf. Navigeren binnen de
-  // app naar dit scherm — bijvoorbeeld via "Wijzig vakken" — laat hem met rust,
-  // en een directe link naar een planner komt hier sowieso niet langs.
+  // De uitleg hoort alleen bij het openen van de site zelf of het kiezen van
+  // een school. Navigeren binnen de app naar dit scherm — bijvoorbeeld via
+  // "Wijzig vakken" — laat hem met rust, en een directe link naar een planner
+  // komt hier sowieso niet langs.
   beforeRouteEnter(to, from, next) {
-    const isFreshVisit = from.matched.length === 0
+    const isFreshVisit = from.matched.length === 0 || from.name === 'schoolSearch'
     next((vm) => {
       if (isFreshVisit && !introHidden()) {
         vm.introOpen = true
@@ -242,7 +254,7 @@ export default {
       if (!this.canConfirm) {
         return
       }
-      saveSelection({ year: this.year, courses: this.courses })
+      saveSelection(this.plannerStore.schoolId, { year: this.year, courses: this.courses })
       this.$router.push(this.plannerPath)
     },
   },
@@ -286,10 +298,30 @@ export default {
   font-size: 15px;
 }
 
+.logo-image {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
 .brand-name {
   font-weight: 600;
   font-size: 16px;
   letter-spacing: -0.01em;
+}
+
+.brand-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--faint);
+  text-decoration: none;
+}
+
+.brand-sub:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .heading {

@@ -73,7 +73,7 @@
                       size="small"
                       variant="text"
                       prepend-icon="mdi-pencil-outline"
-                      :to="`/bewerk/${row.year}/${row.abbr}`"
+                      :to="`${plannerStore.basePath}/bewerk/${row.year}/${row.abbr}`"
                     >
                       Bewerk
                     </v-btn>

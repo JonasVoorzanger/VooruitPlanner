@@ -2,8 +2,12 @@ import { defineStore } from 'pinia'
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import { PROFILES } from '../data/profiles'
+import { isSchoolAddress } from '../data/slugs'
 
 // Firestore slaat alleen gevulde velden op; de planner verwacht ze allemaal.
+// Leerjaren van een school die (nog) niet zegt welke leerjaren hij heeft.
+const DEFAULT_YEARS = [4, 5]
+
 const ITEM_DEFAULTS = {
   label: '',
   description: '',
@@ -42,7 +46,8 @@ export const usePlannerStore = defineStore('planner', {
   state: () => ({
     // 'idle' | 'loading' | 'ready' | 'not-found' | 'error'
     status: 'idle',
-    slug: null,
+    // Het stuk pad waarmee de school is opgevraagd.
+    requested: null,
     schoolId: null,
     school: null,
     schoolYear: null,
@@ -53,6 +58,23 @@ export const usePlannerStore = defineStore('planner', {
     allSubjectsLoaded: false,
   }),
   getters: {
+    // Het echte adres van de school: de slug zodra hij is goedgekeurd, anders
+    // het school-id.
+    address: (state) => {
+      if (!state.school) {
+        return null
+      }
+      return state.school.status === 'active' && state.school.slug ? state.school.slug : state.schoolId
+    },
+    // Het begin van elk pad binnen de school, bijvoorbeeld `/hal`.
+    basePath() {
+      return this.address ? `/${this.address}` : '/'
+    },
+    isPending: (state) => state.school?.status === 'pending',
+    years: (state) => {
+      const years = (state.school?.years || []).map(Number).filter(Number.isInteger)
+      return years.length ? [...years].sort((a, b) => a - b) : DEFAULT_YEARS
+    },
     subjects: (state) =>
       Object.entries(state.subjectDocs)
         .map(([abbreviation, subject]) => ({
@@ -132,18 +154,26 @@ export const usePlannerStore = defineStore('planner', {
 
     // Zoekt de school bij een adres: eerst als slug, dan als school-id (het
     // adres van een school die nog niet is goedgekeurd). Laadt ook het jaar.
-    async loadSchool(slug) {
-      if (this.slug === slug && ['loading', 'ready', 'not-found'].includes(this.status)) {
+    async loadSchool(segment) {
+      const known = segment === this.requested || (this.status === 'ready' && segment === this.address)
+      if (known && ['loading', 'ready', 'not-found'].includes(this.status)) {
         return schoolRequest
       }
 
       this.$reset()
-      this.slug = slug
+      this.requested = segment
+      if (!isSchoolAddress(segment)) {
+        this.status = 'not-found'
+        schoolRequest = Promise.resolve()
+        return schoolRequest
+      }
+
       this.status = 'loading'
       schoolRequest = (async () => {
         try {
-          const slugSnap = await getDoc(doc(db, 'slugs', slug))
-          const schoolId = slugSnap.exists() ? slugSnap.data().schoolId : slug
+          // Slugs zijn altijd kleine letters; school-ids niet.
+          const slugSnap = await getDoc(doc(db, 'slugs', segment.toLowerCase()))
+          const schoolId = slugSnap.exists() ? slugSnap.data().schoolId : segment
           const schoolSnap = await getDoc(doc(db, 'schools', schoolId)).catch((error) => {
             // Een onbekend of niet-goedgekeurd id mag niet gelezen worden.
             if (error.code === 'permission-denied') {

@@ -35,7 +35,7 @@
           rounded="xl"
           elevation="0"
           border
-          :to="`/bewerk/${row.year}/${row.abbr}`"
+          :to="`${plannerStore.basePath}/bewerk/${row.year}/${row.abbr}`"
         >
           <v-card-text class="d-flex align-center ga-4">
             <div class="abbr">{{ row.abbr }}</div>

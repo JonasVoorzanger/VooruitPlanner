@@ -6,16 +6,16 @@ planner, into a service that any school can use. This repo started as a copy of
 PeriodePlanner, with its git history. The student-facing planner views stay; the
 data layer, login and admin screens are new. The app's interface stays in Dutch.
 
-## Where we are (handoff, 2026-09-23)
+## Where we are (handoff, 2026-09-24)
 
-Phases 0 and 1 are done; phase 2 is next. Everything is committed on `main`.
+Phases 0, 1 and 2 are done; phase 3 is next. Phase 2 is on branch
+`claude/determined-goodall-0rbypw`, not yet merged into `main`.
 
 **Next steps, in order:**
 
 1. Load school `hal` into dev (blocked on Jonas, see below):
    `npm run migrate -- --project vooruitplanner-development`.
-2. Phase 2. Start by replacing the hard-coded `SCHOOL_SLUG = 'hal'` in
-   `src/router/index.js` with the first path segment.
+2. Phase 3: editor access.
 
 **Waiting on Jonas:**
 
@@ -56,15 +56,33 @@ Phases 0 and 1 are done; phase 2 is next. Everything is committed on `main`.
   already falls back from `slugs/{slug}` to `schools/{id}` for pending schools.
   The getters `events`, `subjects`, `weeks` and `profiles` keep the shape the
   views had with the old spreadsheet store.
-- `src/router/index.js`: the guard that loads data before each screen, and
-  which subjects each route needs.
-- `src/App.vue`: "not found" and error messages based on `store.status`.
+- `src/router/index.js`: history mode, every school route under `/:school/`.
+  The guard loads the school and the subjects a screen needs, and redirects to
+  the school's real address (`/HAL` → `/hal`, an approved school's id address
+  → its slug, old `/hal#/jaar/…` links → `/hal/jaar/…`).
+- `src/data/slugs.js`: reserved slugs and slug validation, without imports so
+  the phase 4 sign-up function can reuse it.
+- `src/views/SchoolSearchView.vue` + `src/utils/schools.js`: the front page.
+  It loads all active schools and searches in the browser (fine for a few
+  hundred schools), and remembers the last school in localStorage.
+- `src/App.vue`: "not found" and error messages based on `store.status`, the
+  pending banner, and the school's name and colour in the title and theme
+  (the colour's hue becomes `--accent`, see `src/style.css`).
+- Store getters `address`, `basePath`, `isPending` and `years` replace the
+  planned `useSchool()`; views build links with `plannerStore.basePath`.
 - `firestore.rules` + `tests/firestore.rules.test.js`: rules and their tests.
 - `scripts/migration/`: the migration script and its source data.
 - `functions/`: empty scaffold from `firebase init` (JavaScript, eslint google
   config); first real use is phase 3.
 
 **Loose ends to pick up along the way:**
+
+- The pending banner cannot be seen yet: only admins can read a pending
+  school, and admin login comes in phase 4. Check it then.
+- The front page says sign-up and admin login are coming; phase 4 turns those
+  into links to `/aanmelden` and `/beheer` (both already reserved).
+- The student's choice is now stored per school (`plannerSelection:<schoolId>`),
+  and the leerjaar buttons come from `school.years`.
 
 - EditIndexView and SubjectEditView still tell teachers they download a CSV;
   phase 3 replaces this with saving to Firestore.
@@ -177,7 +195,7 @@ to prod without asking Jonas first.
 - Still to do: run the migration on dev once gcloud's application-default
   credentials have access to `vooruitplanner-development`.
 
-### Phase 2: Choosing the school from the path
+### Phase 2: Choosing the school from the path (done)
 - Switch to history mode; all school routes live under `/:school/`
   (`/:school/jaar/:year/:courses`, `/:school/bewerklijst`,
   `/:school/bewerk/:year/:course`).

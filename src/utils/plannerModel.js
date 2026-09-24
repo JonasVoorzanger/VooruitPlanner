@@ -416,16 +416,19 @@ export function schoolWideWhenLabel(event) {
   return `${WEEKDAYS_LONG[(start.getDay() + 6) % 7]} ${formatShort(start)}`
 }
 
-const SELECTION_KEY = 'plannerSelection'
+// De keuze van een leerling, per school: elke school heeft zijn eigen vakken.
+function selectionKey(schoolId) {
+  return `plannerSelection:${schoolId}`
+}
 
-export function loadSelection() {
+export function loadSelection(schoolId, validYears = []) {
   try {
-    const raw = localStorage.getItem(SELECTION_KEY)
+    const raw = localStorage.getItem(selectionKey(schoolId))
     if (raw) {
       const parsed = JSON.parse(raw)
       const year = Number(parsed.year)
       const courses = Array.isArray(parsed.courses) ? parsed.courses.filter(Boolean) : []
-      if (year >= 4 && year <= 5) {
+      if (validYears.includes(year)) {
         return { year, courses }
       }
       return { year: null, courses }
@@ -436,9 +439,9 @@ export function loadSelection() {
   return { year: null, courses: [] }
 }
 
-export function saveSelection(selection) {
+export function saveSelection(schoolId, selection) {
   try {
-    localStorage.setItem(SELECTION_KEY, JSON.stringify(selection))
+    localStorage.setItem(selectionKey(schoolId), JSON.stringify(selection))
   } catch {
     // storage unavailable
   }

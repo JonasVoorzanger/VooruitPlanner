@@ -11,25 +11,27 @@ See [PLAN.md](PLAN.md) for the build plan and the decisions behind it.
 
 ## Features
 
+- School search on the front page (`/`), which remembers the last school visited
+- Each school's own name, colour and logo in the planner
 - Onboarding flow to pick a leerjaar and vakken, producing a shareable planner link
 - Profile shortcuts (C&M, E&M, N&G, N&T) that fill the vakkenpakket in one click
 - Three views over the same data: **Lijst** (scroll the whole year, weeks collapse and expand), **Maand** (one month at a glance) and **Per vak** (one subject, every week, all detail visible)
 - Compact/Uitgebreid detail levels, a Filter menu (Toetsen / Planning / Overig) and a light/dark theme toggle
 - A4 export of the list, month or subject view, with per-week selection
 - Event detail dialog with type, weging and Markdown description
-- Bulk export (`/export`): one PDF per vak, or every vak in one document, for sending to teachers to check
-- Teacher entry point (`/bewerklijst`) and per-vak editor (`/bewerk/<jaar>/<VAK>`)
+- Bulk export (`/<school>/export`): one PDF per vak, or every vak in one document, for sending to teachers to check
+- Teacher entry point (`/<school>/bewerklijst`) and per-vak editor (`/<school>/bewerk/<jaar>/<VAK>`)
 - Installable on a phone's home screen, a **Delen** button and Open Graph tags for link previews
 
 ## Intro tour
 
-First-time visitors to the main page (`/`) get a five-step walkthrough. The
+First-time visitors to a school's page (`/<school>`) get a five-step walkthrough. The
 step images are placeholders in [`public/intro/`](public/intro/) — replace
 `stap-1.png` … `stap-5.png` with real screenshots at the same names (960×540, 16:9).
 Text and order live in `STEPS` in
 [`src/components/IntroTour.vue`](src/components/IntroTour.vue).
 
-It only auto-opens on the main page; shared links straight to a planner never
+It only auto-opens on the school's page; shared links straight to a planner never
 trigger it. The auto-shown tour has no close button and ignores Escape and
 backdrop clicks — you walk it through and close it on the last step. Reopened
 from the **?** button it is dismissible as usual. The **?** button next to the theme toggle reopens it any time, and
