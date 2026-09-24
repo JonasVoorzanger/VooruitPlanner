@@ -113,15 +113,16 @@ Set `VITE_USE_EMULATOR=true` in `.env.development.local`, then:
 
 ```bash
 firebase emulators:start --project demo-vooruitplanner   # terminal 1
-npm run migrate -- --emulator                             # loads school hal
+npm run seed:demo -- --emulator                           # loads the demo school, /demo
 npm run dev                                               # terminal 2
 ```
 
 ### Tests and data
 
 ```bash
-npm run test:rules                                        # Firestore rules, on the emulator
-npm run migrate -- --project vooruitplanner-development   # school hal on dev
+npm run test:rules                                        # rules (on the emulator) and unit tests
+npm run seed:demo -- --project vooruitplanner-development # demo school on dev
+npm run migrate -- --emulator                             # school hal (real data)
 ```
 
 ## Build

@@ -10,30 +10,13 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { initializeApp } from 'firebase-admin/app'
-import { FieldValue, getFirestore } from 'firebase-admin/firestore'
+import { compact, targetFromArgs, writeSchool } from '../lib/write-school.js'
 
 const SLUG = 'hal'
 const SCHOOL_YEAR = '2026-2027'
-const PROD_PROJECT = 'vooruitplanner'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const args = process.argv.slice(2)
-const useEmulator = args.includes('--emulator')
-const projectIndex = args.indexOf('--project')
-const projectId = useEmulator ? 'demo-vooruitplanner' : projectIndex >= 0 ? args[projectIndex + 1] : undefined
-
-if (!projectId) {
-  console.error('Geef --project <id> of --emulator mee.')
-  process.exit(1)
-}
-if (projectId === PROD_PROJECT) {
-  console.error('Niet naar productie migreren vanuit dit script.')
-  process.exit(1)
-}
-if (useEmulator) {
-  process.env.FIRESTORE_EMULATOR_HOST ||= 'localhost:8080'
-}
+const target = targetFromArgs()
 
 // Minimale CSV-parser: komma's, aanhalingstekens en regeleinden binnen velden.
 function parseCsv(text) {
@@ -82,11 +65,6 @@ function parseCsv(text) {
 }
 
 const TRUE_VALUES = new Set(['1', 'true', 'yes', 'x'])
-
-// Alleen gevulde velden opslaan; de store vult de rest weer aan.
-function compact(item) {
-  return Object.fromEntries(Object.entries(item).filter(([, value]) => value !== '' && value !== null && value !== undefined && value !== false))
-}
 
 function subjectItem(event) {
   return compact({
@@ -137,25 +115,13 @@ if (unknown.length) {
   process.exit(1)
 }
 
-initializeApp({ projectId })
-const db = getFirestore()
-
-const slugRef = db.doc(`slugs/${SLUG}`)
-const existing = await slugRef.get()
-const schoolRef = existing.exists ? db.doc(`schools/${existing.data().schoolId}`) : db.collection('schools').doc()
-const yearRef = schoolRef.collection('years').doc(SCHOOL_YEAR)
-
-const batch = db.batch()
-batch.set(slugRef, { schoolId: schoolRef.id })
-batch.set(
-  schoolRef,
-  {
-    slug: SLUG,
-    requestedSlug: SLUG,
+await writeSchool(target, {
+  slug: SLUG,
+  schoolYear: SCHOOL_YEAR,
+  school: {
     name: 'HAL',
     color: '#1f5fa7',
     logoUrl: null,
-    status: 'active',
     region: null,
     years: [4, 5],
     profiles: [
@@ -164,31 +130,18 @@ batch.set(
       { key: 'NG', label: 'N&G', name: 'Natuur & Gezondheid' },
       { key: 'NT', label: 'N&T', name: 'Natuur & Techniek' },
     ],
-    currentSchoolYear: SCHOOL_YEAR,
-    updatedAt: FieldValue.serverTimestamp(),
-    ...(existing.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
   },
-  { merge: true },
-)
-batch.set(yearRef, {
-  weeks: data.weeks.map((week) => compact(week)),
+  weeks: data.weeks,
   schoolWide: schoolWideRows.map(schoolWideItem),
+  subjects: data.subjects.map((subject) => {
+    const abbreviation = subject.abbreviation.toUpperCase()
+    return {
+      abbreviation,
+      fullName: subject.full_name,
+      profiles: subject.profiles,
+      required: subject.required,
+      items: itemsBySubject.get(abbreviation) || [],
+    }
+  }),
+  updatedBy: 'migratie',
 })
-data.subjects.forEach((subject) => {
-  const abbr = subject.abbreviation.toUpperCase()
-  batch.set(yearRef.collection('subjects').doc(abbr), {
-    fullName: subject.full_name,
-    profiles: subject.profiles || {},
-    required: subject.required || {},
-    items: itemsBySubject.get(abbr) || [],
-    updatedAt: FieldValue.serverTimestamp(),
-    updatedBy: 'migratie',
-  })
-})
-await batch.commit()
-
-const itemCount = [...itemsBySubject.values()].reduce((sum, items) => sum + items.length, 0)
-console.log(
-  `School ${SLUG} (${schoolRef.id}) in ${projectId}: ${data.weeks.length} weken, ` +
-    `${schoolWideRows.length} schoolbrede items, ${data.subjects.length} vakken, ${itemCount} vakitems.`,
-)

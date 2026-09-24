@@ -13,27 +13,28 @@ Phases 0, 1 and 2 are done; phase 3 is next. Phase 2 is on branch
 
 **Next steps, in order:**
 
-1. Load school `hal` into dev (blocked on Jonas, see below):
-   `npm run migrate -- --project vooruitplanner-development`.
+1. Load the demo school into dev (blocked on access, see below):
+   `npm run seed:demo -- --project vooruitplanner-development`.
 2. Phase 3: editor access.
 
 **Waiting on Jonas:**
 
-- Access for the migration. It uses gcloud application-default credentials,
-  currently `jonas@leerlevels.nl`, which has no access to
-  `vooruitplanner-development`. Either give that account the role "Cloud
-  Datastore User" on the dev project, or run
-  `gcloud auth application-default login` with the Gmail account.
-- The full name of school `hal` (the migration sets `name: 'HAL'`) and its
-  region (noord | midden | zuid; now `null`). Both are in
-  `scripts/migration/migrate-hal.js`.
+- Write access to dev Firestore for `npm run seed:demo`. The scripts need the
+  role "Cloud Datastore User" (`roles/datastore.user`) on
+  `vooruitplanner-development` only, never on prod. Either:
+  - on his own machine: give `jonas@leerlevels.nl` that role, or run
+    `gcloud auth application-default login` with the Gmail account, then run
+    the command above; or
+  - for a remote session: a service account with only that role, its JSON key
+    stored as the environment variable `FIREBASE_SERVICE_ACCOUNT` in the cloud
+    environment's settings. The scripts refuse a key for another project.
 
 **State of the Firebase projects:**
 
 - `vooruitplanner-development`: Firestore `(default)` in europe-west4, rules
   from `firestore.rules` deployed, one web app ("VooruitPlanner",
   `1:892654467731:web:1776b967b3f57db6316b66`), hosting site exists. No data
-  yet.
+  yet; it gets the demo school.
 - `vooruitplanner` (prod): hosting site only. No database, no web app, nothing
   deployed. Don't touch it without asking Jonas.
 
@@ -45,7 +46,9 @@ Phases 0, 1 and 2 are done; phase 3 is next. Phase 2 is on branch
   (needs a Firebase login with access), or set `VITE_USE_EMULATOR=true` and work
   fully locally. See `.env.example` and the README.
 - Local run without Firebase access: `firebase emulators:start --project
-  demo-vooruitplanner`, then `npm run migrate -- --emulator`, then `npm run dev`.
+  demo-vooruitplanner`, then `npm run seed:demo -- --emulator` (and/or
+  `npm run migrate -- --emulator` for `hal`), then `npm run dev` and open
+  `/demo`.
   The emulator needs Java.
 - Checks before committing: `npm run build` and `npm run test:rules`.
 
@@ -71,7 +74,14 @@ Phases 0, 1 and 2 are done; phase 3 is next. Phase 2 is on branch
 - Store getters `address`, `basePath`, `isPending` and `years` replace the
   planned `useSchool()`; views build links with `plannerStore.basePath`.
 - `firestore.rules` + `tests/firestore.rules.test.js`: rules and their tests.
-- `scripts/migration/`: the migration script and its source data.
+- `scripts/demo/`: the demo school, "Demo College" on `/demo`. Everything is
+  generated in `demo-school.js` (weeks, school-wide items, 20 subjects with
+  planning and tests for klas 4 and 5); no real data. Checked by
+  `tests/demo-school.test.js`.
+- `scripts/migration/`: the `hal` migration and its source data, for phase 7.
+- `scripts/lib/write-school.js`: shared by both: picks the target
+  (`--emulator` / `--project`, refuses prod), logs in (gcloud ADC or
+  `FIREBASE_SERVICE_ACCOUNT`) and writes one active school.
 - `functions/`: empty scaffold from `firebase init` (JavaScript, eslint google
   config); first real use is phase 3.
 
@@ -136,10 +146,13 @@ without asking Jonas.
   in Firestore (`feedback`) and is readable only by admins.
 - **The Claude import runs server-side** in a Cloud Function, using Jonas's API
   key and a monthly limit per school. The browser never sees the key.
-- **Jonas's school** has the slug `hal`. The migration loads its existing data
-  (`scripts/migration/spreadsheet.json` and
-  `scripts/migration/schoolwide-events-2026-2027.csv`) into dev, to have real
-  data to test with.
+- **Test data is a demo school**, not Jonas's school: "Demo College" on
+  `/demo`, fully generated (`npm run seed:demo`). Jonas's school keeps the slug
+  `hal`; its migration (`npm run migrate`, from
+  `scripts/migration/spreadsheet.json` and
+  `scripts/migration/schoolwide-events-2026-2027.csv`) is used in phase 7, when
+  the school moves to prod. Its full name and region are still to be filled in
+  in `scripts/migration/migrate-hal.js` before then.
 
 ## Data model
 Students should load a handful of documents per visit, not one document per
@@ -185,15 +198,14 @@ to prod without asking Jonas first.
 - Firebase config comes from `.env.*.local` files (see `.env.example`);
   firebase aliases `dev` and `prod`.
 
-### Phase 1: Data model and migration (done, except loading dev)
+### Phase 1: Data model and migration (done)
 - firestore.rules for the model above, tested against the emulator
   (`npm run test:rules`).
 - `npm run migrate` loads the existing data as school `hal` (emulator or dev;
   it refuses prod).
 - The Pinia store (`stores/planner.js`) loads from Firestore: school, year and
   the subjects a screen needs. A router guard loads them before a screen opens.
-- Still to do: run the migration on dev once gcloud's application-default
-  credentials have access to `vooruitplanner-development`.
+- Dev gets the demo school instead (`npm run seed:demo`); see the handoff.
 
 ### Phase 2: Choosing the school from the path (done)
 - Switch to history mode; all school routes live under `/:school/`

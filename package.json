@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:rules": "firebase emulators:exec --only firestore --project demo-vooruitplanner \"node --test tests/*.test.js\"",
-    "migrate": "node scripts/migration/migrate-hal.js"
+    "migrate": "node scripts/migration/migrate-hal.js",
+    "seed:demo": "node scripts/demo/seed-demo.js"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
